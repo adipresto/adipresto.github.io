@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Simulasi ATS — cek kecocokan CV vs job description dan skor ATS-friendly." />
+  <title>ATS Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #2563eb; --primary-dark: #1d4ed8;
+      --text: #111827; --muted: #6b7280;
+      --bg: #f3f4f6; --surface: #ffffff; --border: #e5e7eb;
+      --radius-card: 14px; --radius-btn: 8px;
+      --shadow-card: 0 2px 8px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.08);
+      --green: #16a34a; --amber: #d97706; --red: #dc2626;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+
+    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1.1rem 1.5rem; }
+    .header-inner { max-width: 980px; margin: 0 auto; display: flex; align-items: center; gap: 1rem; }
+    .back-link { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--muted); font-size: 0.83rem; text-decoration: none; padding: 0.3rem 0.65rem; border-radius: 6px; transition: background .15s, color .15s; flex-shrink: 0; }
+    .back-link:hover { background: var(--bg); color: var(--text); }
+    .sep { color: var(--border); font-size: 1.2rem; }
+    .page-title { font-size: 1rem; font-weight: 600; }
+    .page-sub   { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+
+    main { max-width: 980px; margin: 2rem auto 0; padding: 0 1.5rem 5rem; }
+
+    .card { background: var(--surface); border-radius: var(--radius-card); border: 1px solid var(--border); box-shadow: var(--shadow-card); padding: 1.5rem; }
+    .card-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.45rem; }
+    .card-title svg { width: 15px; height: 15px; opacity: .7; flex-shrink: 0; }
+
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.25rem; border-radius: var(--radius-btn); font-family: inherit; font-size: 0.875rem; font-weight: 500; text-decoration: none; cursor: pointer; transition: background .15s, color .15s, box-shadow .15s; white-space: nowrap; border: 1.5px solid transparent; }
+    .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 2px 10px rgba(37,99,235,.35); }
+    .btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
+    .btn-outline:hover { background: #eff6ff; }
+    .btn-sm { padding: 0.35rem 0.85rem; font-size: 0.8rem; }
+
+    /* Input grid */
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .input-col { background: var(--surface); border-radius: var(--radius-card); border: 1px solid var(--border); box-shadow: var(--shadow-card); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .col-label { font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    .badge-opt { font-size: 0.68rem; background: #f0f9ff; color: #0369a1; padding: 0.12rem 0.5rem; border-radius: 20px; font-weight: 500; }
+    .badge-req { font-size: 0.68rem; background: #fef3c7; color: #92400e; padding: 0.12rem 0.5rem; border-radius: 20px; font-weight: 500; }
+    .col-hint { font-size: 0.78rem; color: var(--muted); }
+    textarea { width: 100%; min-height: 180px; padding: 0.8rem 0.9rem; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.855rem; color: var(--text); background: var(--bg); resize: vertical; outline: none; line-height: 1.65; transition: border-color .15s, background .15s; }
+    textarea:focus { border-color: var(--primary); background: var(--surface); }
+    .input-bar { display: flex; align-items: center; justify-content: space-between; }
+    .word-count { font-size: 0.75rem; color: var(--muted); }
+    .analyze-bar { display: flex; justify-content: center; padding: 0.25rem 0 1.25rem; }
+
+    /* JD match hero */
+    .jd-wrap { background: var(--surface); border-radius: var(--radius-card); border: 1px solid var(--border); box-shadow: var(--shadow-card); padding: 1.75rem; margin-bottom: 1rem; }
+    .jd-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .jd-pct { font-size: 3.2rem; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+    .jd-meta-title { font-size: 1.1rem; font-weight: 600; }
+    .jd-meta-sub { font-size: 0.83rem; color: var(--muted); margin-top: 0.25rem; }
+    .match-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .match-col { border-radius: 10px; padding: 1rem 1.1rem; }
+    .match-found   { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .match-missing { background: #fff7ed; border: 1px solid #fed7aa; }
+    .match-hdr { font-size: 0.8rem; font-weight: 700; margin-bottom: 0.65rem; }
+    .match-found   .match-hdr { color: var(--green); }
+    .match-missing .match-hdr { color: #c2410c; }
+    .mtags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .mtag { font-size: 0.78rem; padding: 0.2rem 0.55rem; border-radius: 20px; font-weight: 500; }
+    .mtag-ok  { background: #dcfce7; color: #15803d; }
+    .mtag-gap { background: #ffedd5; color: #c2410c; }
+    .match-tip { font-size: 0.76rem; color: #92400e; margin-top: 0.7rem; font-style: italic; }
+    .no-kw { font-size: 0.82rem; color: var(--muted); font-style: italic; }
+
+    /* Score */
+    #results { margin-top: 0; }
+    .score-header { background: var(--surface); border-radius: var(--radius-card); border: 1px solid var(--border); box-shadow: var(--shadow-card); padding: 1.5rem 1.75rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .score-meta h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; }
+    .score-grade { font-size: 0.88rem; font-weight: 500; margin-top: 0.25rem; }
+    .grade-high { color: var(--green); }
+    .grade-mid  { color: var(--amber); }
+    .grade-low  { color: var(--red); }
+    .score-stat { font-size: 0.78rem; color: var(--muted); margin-top: 0.18rem; }
+
+    /* Breakdown */
+    .breakdown-wrap { background: var(--surface); border-radius: var(--radius-card); border: 1px solid var(--border); padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+    .breakdown-lbl { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 0.85rem; }
+    .bcat { margin-bottom: 0.65rem; }
+    .bcat:last-child { margin-bottom: 0; }
+    .bcat-row { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.28rem; }
+    .bcat-pts { font-weight: 600; color: var(--primary); }
+    .bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+    .fill-g { background: var(--green); }
+    .fill-a { background: var(--amber); }
+    .fill-r { background: var(--red); }
+
+    /* Detail grid */
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .col2  { grid-column: 1 / -1; }
+
+    /* Contact / generic row */
+    .ci { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.52rem 0; border-bottom: 1px solid var(--bg); }
+    .ci:last-child { border-bottom: none; }
+    .ci-ico { font-size: 1rem; flex-shrink: 0; line-height: 1.45; }
+    .ci-lbl { font-size: 0.7rem; color: var(--muted); margin-bottom: 2px; }
+    .ci-val { font-size: 0.845rem; font-weight: 500; word-break: break-all; }
+    .badge { display: inline-flex; align-items: center; font-size: 0.71rem; padding: 0.15rem 0.5rem; border-radius: 20px; font-weight: 500; }
+    .badge-yes  { background: #dcfce7; color: #15803d; }
+    .badge-no   { background: #fee2e2; color: #b91c1c; }
+    .badge-warn { background: #fef3c7; color: #92400e; }
+    .badge-ok   { background: #dcfce7; color: #15803d; }
+
+    /* Sections */
+    .sec-row { display: flex; align-items: center; justify-content: space-between; padding: 0.42rem 0; border-bottom: 1px solid var(--bg); font-size: 0.855rem; }
+    .sec-row:last-child { border-bottom: none; }
+
+    /* Skills */
+    .sk-cat { margin-bottom: 0.85rem; }
+    .sk-cat:last-child { margin-bottom: 0; }
+    .sk-cat-lbl { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 0.4rem; }
+    .sk-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .sk-tag { background: #eff6ff; color: var(--primary); font-size: 0.78rem; padding: 0.18rem 0.55rem; border-radius: 20px; font-weight: 500; }
+    .no-data { font-size: 0.84rem; color: var(--muted); font-style: italic; }
+
+    /* Entry list */
+    .entry { padding: 0.46rem 0; border-bottom: 1px solid var(--bg); font-size: 0.84rem; line-height: 1.45; }
+    .entry:last-child { border-bottom: none; }
+
+    /* Job hopping */
+    .jh-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.75rem; }
+    .jh-stat  { background: var(--bg); border-radius: 8px; padding: 0.6rem 0.75rem; }
+    .jh-val   { font-size: 1.15rem; font-weight: 700; }
+    .jh-lbl   { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+    .jh-short { margin-top: 0.75rem; }
+    .jh-short-title { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 0.35rem; }
+
+    /* Identity */
+    .identity-name  { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .identity-title { display: inline-flex; font-size: 0.82rem; background: #eff6ff; color: var(--primary); padding: 0.2rem 0.7rem; border-radius: 20px; font-weight: 500; }
+
+    /* Verb / quant */
+    .vtag { display: inline-block; background: #f0fdf4; color: #15803d; font-size: 0.78rem; padding: 0.18rem 0.55rem; border-radius: 20px; font-weight: 500; margin: 0.18rem 0.18rem 0 0; }
+    .qitem { font-size: 0.82rem; padding: 0.4rem 0.7rem; background: var(--bg); border-radius: 6px; margin-bottom: 0.33rem; line-height: 1.4; }
+    .qitem:last-child { margin-bottom: 0; }
+
+    /* Recommendations */
+    .rec { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.52rem 0; border-bottom: 1px solid var(--bg); font-size: 0.845rem; }
+    .rec:last-child { border-bottom: none; }
+    .rec-ico { flex-shrink: 0; line-height: 1.5; }
+    .rec-ok   { color: var(--green); }
+    .rec-warn { color: var(--amber); }
+    .rec-bad  { color: var(--red); }
+
+    footer { text-align: center; padding: 1.25rem 1rem 2rem; color: var(--muted); font-size: 0.78rem; }
+
+    @media (max-width: 640px) {
+      .input-grid, .match-split, .grid2, .jh-stats { grid-template-columns: 1fr; }
+      .col2 { grid-column: auto; }
+      .score-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .jd-header { gap: 1rem; }
+      .jd-pct { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="./index.html" class="back-link" aria-label="Kembali ke CV">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+        Kembali
+      </a>
+      <span class="sep">|</span>
+      <div>
+        <div class="page-title">ATS Analyzer</div>
+        <div class="page-sub">Simulasi keyword matching Job Description × CV</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="input-grid">
+      <div class="input-col">
+        <div class="col-label">Job Description <span class="badge-opt">Opsional</span></div>
+        <div class="col-hint">Paste lowongan kerja untuk analisis keyword matching.</div>
+        <textarea id="jd-text" placeholder="Paste job description di sini...&#10;&#10;Contoh:&#10;Requirements:&#10;- 3+ years with C# and .NET Core&#10;- SQL Server, Azure DevOps..."></textarea>
+        <div class="input-bar"><span class="word-count" id="jd-count">0 kata</span></div>
+      </div>
+      <div class="input-col">
+        <div class="col-label">CV / Resume <span class="badge-req">Wajib</span></div>
+        <div class="col-hint">Google Docs → <b>Ctrl+A</b> → <b>Ctrl+C</b> → paste di sini.</div>
+        <textarea id="cv-text" placeholder="Paste teks CV di sini..."></textarea>
+        <div class="input-bar"><span class="word-count" id="cv-count">0 kata</span></div>
+      </div>
+    </div>
+
+    <div class="analyze-bar">
+      <button id="btn-analyze" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Analisis CV
+      </button>
+    </div>
+
+    <div id="results" hidden></div>
+  </main>
+
+  <footer>
+    <p>ATS Analyzer &mdash; Semua analisis dilakukan lokal di browser. Tidak ada data yang dikirim ke server.</p>
+  </footer>
+
+  <!-- Parser module (no LLM, no dependencies) -->
+  <script src="./assets/js/cv-parser.js"></script>
+
+  <script>
+    /* ═══════════════════════════════════════════
+       RENDERER HELPERS
+    ═══════════════════════════════════════════ */
+    function scoreColor(s) { return s >= 80 ? '#16a34a' : s >= 60 ? '#d97706' : '#dc2626'; }
+
+    function gradeInfo(s) {
+      if (s >= 85) return { text: 'Sangat ATS-Friendly',                     cls: 'grade-high' };
+      if (s >= 70) return { text: 'Cukup Baik — Ada Ruang Peningkatan',      cls: 'grade-mid'  };
+      if (s >= 50) return { text: 'Perlu Perbaikan',                         cls: 'grade-mid'  };
+      return           { text: 'Banyak Elemen Penting Tidak Terdeteksi',     cls: 'grade-low'  };
+    }
+
+    function fillCls(pct) { return pct >= 70 ? 'fill-g' : pct >= 40 ? 'fill-a' : 'fill-r'; }
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function scoreRingSvg(score) {
+      const r = 36, circ = +(2 * Math.PI * r).toFixed(2);
+      const color  = scoreColor(score);
+      const target = +(circ * (1 - score / 100)).toFixed(2);
+      return `<svg viewBox="0 0 100 100" width="100" height="100" aria-label="Skor ATS ${score}">
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+        <circle class="ring-arc" cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="10"
+          stroke-dasharray="${circ}" stroke-dashoffset="${circ}"
+          stroke-linecap="round" transform="rotate(-90 50 50)"
+          data-target="${target}" style="transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)"/>
+        <text x="50" y="47" text-anchor="middle" dominant-baseline="middle"
+          font-size="20" font-weight="700" fill="${color}" font-family="Inter,system-ui,sans-serif">${score}</text>
+        <text x="50" y="62" text-anchor="middle" dominant-baseline="middle"
+          font-size="9" fill="#6b7280" font-family="Inter,system-ui,sans-serif">/ 100</text>
+      </svg>`;
+    }
+
+    /* ═══════════════════════════════════════════
+       SECTION RENDERERS
+    ═══════════════════════════════════════════ */
+    function renderJDMatch(r) {
+      const color = r.pct >= 70 ? '#16a34a' : r.pct >= 50 ? '#d97706' : '#dc2626';
+      const label = r.pct >= 70 ? 'Sangat Baik' : r.pct >= 50 ? 'Cukup' : 'Rendah';
+      return `<div class="jd-wrap">
+        <div class="jd-header">
+          <div class="jd-pct" style="color:${color}">${r.pct}%</div>
+          <div>
+            <div class="jd-meta-title">Kecocokan dengan Job Description</div>
+            <div class="jd-meta-sub">${r.matched.length} dari ${r.total} keyword &bull; <strong style="color:${color}">${label}</strong></div>
+          </div>
+        </div>
+        <div class="match-split">
+          <div class="match-col match-found">
+            <div class="match-hdr">✓ Keyword Cocok (${r.matched.length})</div>
+            <div class="mtags">${r.matched.length ? r.matched.map(k => `<span class="mtag mtag-ok">${esc(k)}</span>`).join('') : '<span class="no-kw">Tidak ada keyword yang cocok.</span>'}</div>
+          </div>
+          <div class="match-col match-missing">
+            <div class="match-hdr">✗ Keyword Kurang (${r.missing.length})</div>
+            <div class="mtags">${r.missing.length ? r.missing.map(k => `<span class="mtag mtag-gap">${esc(k)}</span>`).join('') : '<span class="no-kw">Semua keyword JD sudah ada 🎉</span>'}</div>
+            ${r.missing.length ? '<div class="match-tip">Tambahkan keyword ini ke seksi Skills atau deskripsi pengalaman.</div>' : ''}
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function renderJobHopping(jh) {
+      const flagBadge = jh.flag
+        ? '<span class="badge badge-warn">⚠ Sering Berganti</span>'
+        : '<span class="badge badge-ok">✓ ' + esc(jh.label) + '</span>';
+
+      return `<div class="card-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Stabilitas Karier ${flagBadge}
+        </div>
+        ${jh.totalPositions < 2
+          ? '<p class="no-data">Data pengalaman tidak cukup untuk analisis stabilitas.</p>'
+          : `<div class="jh-stats">
+              <div class="jh-stat">
+                <div class="jh-val">${jh.totalPositions}</div>
+                <div class="jh-lbl">Posisi Terdeteksi</div>
+              </div>
+              <div class="jh-stat">
+                <div class="jh-val">${jh.avgTenureMonths} bln</div>
+                <div class="jh-lbl">Rata-rata Tenure</div>
+              </div>
+            </div>
+            ${jh.shortStaysCount > 0 ? `
+              <div class="jh-short">
+                <div class="jh-short-title">Posisi < 1 Tahun (${jh.shortStaysCount})</div>
+                ${jh.shortStays.map(s => `<div class="entry">${esc(s)}</div>`).join('')}
+              </div>` : ''}
+          `}`;
+    }
+
+    const SECTION_LABELS = CVParser.SECTION_LABELS;
+
+    /* ═══════════════════════════════════════════
+       MAIN RENDER
+    ═══════════════════════════════════════════ */
+    function renderResults(parsed, jdResult) {
+      const m     = parsed._meta;
+      const score = CVParser.score(parsed);
+      const recs  = CVParser.recommend(parsed);
+      const grade = gradeInfo(score.total);
+      const ico   = { ok: '✓', warn: '⚡', bad: '✗' };
+
+      let html = '';
+
+      /* JD match (when available) */
+      if (jdResult) html += renderJDMatch(jdResult);
+
+      /* Score ring */
+      html += `
+        <div class="score-header">
+          <div>${scoreRingSvg(score.total)}</div>
+          <div class="score-meta">
+            <h2>Skor ATS: ${score.total}<span style="font-size:.9rem;font-weight:400;color:var(--muted)">/100</span></h2>
+            <p class="score-grade ${grade.cls}">${grade.text}</p>
+            <p class="score-stat">${m.wordCount} kata &bull; ${m.allSkills.length} keahlian &bull; ${m.verbsFound.length} kata kerja aksi</p>
+          </div>
+        </div>
+
+        <div class="breakdown-wrap">
+          <div class="breakdown-lbl">Rincian Skor</div>
+          ${score.breakdown.map(cat => {
+            const catScore = cat.items.reduce((s, i) => s + i.pts, 0);
+            const pct = Math.round((catScore / cat.max) * 100);
+            return `<div class="bcat">
+              <div class="bcat-row"><span>${cat.label}</span><span class="bcat-pts">${catScore}/${cat.max}</span></div>
+              <div class="bar"><div class="bar-fill ${fillCls(pct)}" style="width:${pct}%"></div></div>
+            </div>`;
+          }).join('')}
+        </div>`;
+
+      /* Detail grid */
+      html += `<div class="grid2">
+
+        <!-- Identity -->
+        <div class="card">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Identitas
+          </div>
+          ${parsed.nama_lengkap
+            ? `<div class="identity-name">${esc(parsed.nama_lengkap)}</div>`
+            : '<p class="no-data">Nama tidak terdeteksi. Pastikan nama ada di baris pertama CV.</p>'}
+          ${parsed.rekomendasi_job_title
+            ? `<div style="margin-top:.5rem"><span class="identity-title">${esc(parsed.rekomendasi_job_title)}</span></div>`
+            : ''}
+        </div>
+
+        <!-- Contact -->
+        <div class="card">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Informasi Kontak
+          </div>
+          ${[
+            { ico: '✉', label: 'Email',    val: parsed.email,       found: !!parsed.email       },
+            { ico: '📱', label: 'Nomor HP', val: parsed.nomor_hp,   found: !!parsed.nomor_hp    },
+            { ico: '🔗', label: 'LinkedIn', val: m.linkedin,         found: !!m.linkedin         },
+          ].map(ci => `<div class="ci">
+            <span class="ci-ico">${ci.ico}</span>
+            <div>
+              <div class="ci-lbl">${ci.label}</div>
+              ${ci.found ? `<div class="ci-val">${esc(ci.val)}</div>` : '<span class="badge badge-no">Tidak Ditemukan</span>'}
+            </div>
+          </div>`).join('')}
+        </div>
+
+        <!-- Sections -->
+        <div class="card">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Seksi Terdeteksi
+          </div>
+          ${Object.entries(SECTION_LABELS).map(([k, lbl]) => `
+            <div class="sec-row">
+              <span>${lbl}</span>
+              <span class="badge ${m.sections[k] ? 'badge-yes' : 'badge-no'}">${m.sections[k] ? '✓ Ada' : '✗ Tidak'}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Job hopping -->
+        <div class="card">
+          ${renderJobHopping(m.jobHopping)}
+        </div>
+
+        <!-- Skills (full width) -->
+        <div class="card col2">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Keahlian Teknis Terdeteksi
+            <span style="font-size:.8rem;font-weight:400;color:var(--muted)">(${m.allSkills.length} total)</span>
+          </div>
+          ${Object.keys(m.skillsGrouped).length === 0
+            ? '<p class="no-data">Tidak ada keahlian teknis yang terdeteksi. Cantumkan nama teknologi, tools, dan framework secara eksplisit.</p>'
+            : Object.entries(m.skillsGrouped).map(([cat, list]) => `
+              <div class="sk-cat">
+                <div class="sk-cat-lbl">${cat}</div>
+                <div class="sk-tags">${list.map(s => `<span class="sk-tag">${esc(s)}</span>`).join('')}</div>
+              </div>
+            `).join('')}
+        </div>
+
+        <!-- Experience -->
+        <div class="card">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            Pengalaman Kerja
+            <span style="font-size:.8rem;font-weight:400;color:var(--muted)">(${m.experiences.length})</span>
+          </div>
+          ${m.experiences.length === 0
+            ? '<p class="no-data">Tidak terdeteksi. ATS mengenali pola "Job Title — Company — Year".</p>'
+            : m.experiences.map(e => `<div class="entry">${esc(e.summary)}</div>`).join('')}
+        </div>
+
+        <!-- Education -->
+        <div class="card">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            Pendidikan Terakhir
+          </div>
+          ${parsed.pendidikan_terakhir
+            ? `<div class="entry" style="border:none;padding:0">${esc(parsed.pendidikan_terakhir)}</div>`
+            : '<p class="no-data">Tidak terdeteksi. Cantumkan gelar, universitas, dan tahun lulus.</p>'}
+        </div>
+
+        <!-- Action verbs -->
+        <div class="card">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Kata Kerja Aksi
+            <span style="font-size:.8rem;font-weight:400;color:var(--muted)">(${m.verbsFound.length})</span>
+          </div>
+          ${m.verbsFound.length === 0
+            ? '<p class="no-data">Tidak terdeteksi. Gunakan: developed, implemented, led, optimized…</p>'
+            : `<div>${m.verbsFound.map(v => `<span class="vtag">${esc(v)}</span>`).join('')}</div>`}
+        </div>
+
+        <!-- Quantifiable -->
+        <div class="card">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Prestasi Terukur
+            <span style="font-size:.8rem;font-weight:400;color:var(--muted)">(${m.quantLines.length})</span>
+          </div>
+          ${m.quantLines.length === 0
+            ? '<p class="no-data">Tidak ada. Contoh: "Reduced load time by 40%" atau "Handled 10K daily transactions".</p>'
+            : m.quantLines.slice(0, 5).map(l => `<div class="qitem">${esc(l.length > 130 ? l.slice(0,130)+'…' : l)}</div>`).join('')}
+        </div>
+
+        <!-- Recommendations (full width) -->
+        <div class="card col2">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Rekomendasi ATS
+          </div>
+          ${recs.map(r => `
+            <div class="rec">
+              <span class="rec-ico rec-${r.type}">${ico[r.type]}</span>
+              <span>${r.text}</span>
+            </div>
+          `).join('')}
+        </div>
+
+      </div>
+
+      <div style="text-align:center;margin-top:1.5rem">
+        <button id="btn-reset" class="btn btn-outline btn-sm">↩ Analisis Ulang</button>
+      </div>`;
+
+      const el = document.getElementById('results');
+      el.innerHTML = html;
+      el.removeAttribute('hidden');
+
+      requestAnimationFrame(() => {
+        el.querySelectorAll('.ring-arc').forEach(arc => {
+          arc.style.strokeDashoffset = arc.dataset.target;
+        });
+      });
+
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      document.getElementById('btn-reset').addEventListener('click', () => {
+        el.innerHTML = '';
+        el.setAttribute('hidden', '');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.getElementById('cv-text').focus();
+      });
+    }
+
+    /* ═══════════════════════════════════════════
+       UI EVENTS
+    ═══════════════════════════════════════════ */
+    const ta_jd = document.getElementById('jd-text');
+    const ta_cv = document.getElementById('cv-text');
+
+    function updateCount(ta, id) {
+      document.getElementById(id).textContent =
+        ta.value.trim().split(/\s+/).filter(Boolean).length + ' kata';
+    }
+
+    function wirePlain(ta, countId) {
+      ta.addEventListener('input',  () => updateCount(ta, countId));
+      ta.addEventListener('paste', e => {
+        e.preventDefault();
+        ta.value = e.clipboardData.getData('text/plain');
+        updateCount(ta, countId);
+      });
+    }
+
+    wirePlain(ta_jd, 'jd-count');
+    wirePlain(ta_cv, 'cv-count');
+
+    document.getElementById('btn-analyze').addEventListener('click', () => {
+      const jd = ta_jd.value.trim();
+      const cv = ta_cv.value.trim();
+      if (!cv) {
+        ta_cv.style.borderColor = 'var(--red)';
+        setTimeout(() => { ta_cv.style.borderColor = ''; }, 1500);
+        ta_cv.focus();
+        return;
+      }
+      const parsed   = CVParser.parse(cv);
+      const jdResult = jd ? CVParser.matchJD(jd, cv) : null;
+      renderResults(parsed, jdResult);
+    });
+  </script>
+</body>
+</html>
