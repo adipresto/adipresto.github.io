@@ -37,10 +37,20 @@
     .iframe-fallback { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.9rem; }
     .iframe-fallback a { color: var(--primary); text-decoration: underline; }
     footer { text-align: center; padding: 1.25rem 1rem 2rem; color: var(--muted); font-size: 0.78rem; }
-    @media (max-width: 580px) {
+    .mobile-cta { display: none; }
+    @media (max-width: 768px) {
       .header-inner { flex-direction: column; align-items: flex-start; }
       .header-identity h1 { font-size: 1.35rem; }
-      .doc-card iframe { height: 78vh; }
+      .doc-card { display: none; }
+      .doc-label { display: none; }
+      .mobile-cta {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1rem; padding: 3rem 1.5rem; text-align: center;
+        background: var(--surface); border-radius: var(--radius-card);
+        border: 1px solid var(--border); box-shadow: var(--shadow-card);
+      }
+      .mobile-cta p { font-size: 0.95rem; color: var(--muted); max-width: 280px; }
+      .mobile-cta .btn { padding: 0.75rem 1.75rem; font-size: 0.95rem; }
     }
     @media print {
       @page { margin: 0; }
@@ -60,10 +70,12 @@
         <p id="vm-tagline"></p>
       </div>
       <div class="header-actions">
+          <!--
         <a href="./ats.html" class="btn btn-outline" aria-label="Cek ATS CV">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           ATS Check
         </a>
+          -->
         <a id="vm-linkedin" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline" aria-label="Buka profil LinkedIn">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 0H5C2.239 0 0 2.239 0 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5V5c0-2.761-2.238-5-5-5zM8 19H5V8h3v11zM6.5 6.732c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zM20 19h-3v-5.604c0-3.368-4-3.113-4 0V19h-3V8h3v1.765c1.396-2.586 7-2.777 7 2.476V19z"/></svg>
           LinkedIn
@@ -84,6 +96,17 @@
           <p>Silakan <a id="vm-fallback" href="#" target="_blank" rel="noopener noreferrer">buka dokumen CV ini secara langsung</a>.</p>
         </div>
       </iframe>
+    </div>
+    <div class="mobile-cta">
+      <p>Tampilan dokumen tidak optimal di layar kecil.</p>
+      <a id="vm-mobile-view" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Lihat CV
+      </a>
+      <a id="vm-mobile-download" href="#" download class="btn btn-outline">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download PDF
+      </a>
     </div>
   </main>
   <footer>
@@ -108,7 +131,10 @@
       document.getElementById("vm-name").textContent        = fullName;
       document.getElementById("vm-tagline").textContent     = CV.professionalJargon;
       document.getElementById("vm-linkedin").href           = CV.linkedinUrl;
-      document.getElementById("vm-download").href           = "./assets/pdf/Software Engineer - Muhammad Rizky Adi Prasetyo - CV - APR2026.pdf";
+      const pdfPath = "./assets/pdf/Software Engineer - Muhammad Rizky Adi Prasetyo - CV - APR2026.pdf";
+      document.getElementById("vm-download").href           = pdfPath;
+      document.getElementById("vm-mobile-view").href        = pdfPath;
+      document.getElementById("vm-mobile-download").href    = pdfPath;
       document.getElementById("vm-iframe").src              = CV.cvPublishedLink + "?embedded=true";
       document.getElementById("vm-fallback").href           = CV.cvPublishedLink;
       document.getElementById("vm-footer-name").textContent = shortName;
