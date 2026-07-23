@@ -29,12 +29,25 @@
     width: 100%;
     height: 75vh;
     height: 75dvh; /* dynamic viewport height — benar di mobile */
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     background: #1a1a1a;
     padding: 14px 0;
     position: relative;
     /* strip ini di bawah overlay */
     z-index: 0;
+    /* scroll horizontal manual: drag/swipe, scrollbar disembunyikan biar tetap terlihat seperti strip film */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    cursor: grab;
+  }
+
+  .filmroll.is-dragging {
+    cursor: grabbing;
+  }
+
+  .filmroll::-webkit-scrollbar {
+    display: none;
   }
 
   /* lubang sprocket atas & bawah */
@@ -59,16 +72,6 @@
     display: flex;
     width: max-content;
     height: 100%;
-    animation: scrollLeft 32s linear infinite;
-  }
-
-  .filmroll-track.is-paused {
-    animation-play-state: paused;
-  }
-
-  @keyframes scrollLeft {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
   }
 
   .frame {
@@ -131,10 +134,9 @@
     pointer-events: none;
   }
 
-  /* ─── prefers-reduced-motion: hentikan animasi ───────────────────── */
+  /* ─── prefers-reduced-motion: matikan autoplay, sisakan scroll manual ───────────────────── */
   @media (prefers-reduced-motion: reduce) {
     .filmroll-track {
-      animation: none;
       /* tampilkan satu baris, bungkus */
       flex-wrap: wrap;
       height: auto;
@@ -148,6 +150,8 @@
       height: auto;
       max-height: 75vh;
       overflow-y: auto;
+      overflow-x: hidden;
+      cursor: default;
     }
   }
 
@@ -297,6 +301,45 @@
     margin: 0 auto 1.5rem;
   }
 
+  /* ─── Gate: halaman tunggal saat ?p tidak valid/kosong/tidak ada ───────── */
+  .gate-page {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    flex-direction: column;
+    background: #0d0d0d;
+    color: #B8B09B;
+    padding: 2rem;
+  }
+
+  html.gate-blocked .gate-page {
+    display: flex;
+  }
+
+  /* teks mengambil sisa ruang & selalu center secara vertikal-horizontal */
+  .gate-page .gate-text {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+  }
+
+  /* svg nempel di bawah, seperti bottom bar */
+  .gate-page .gate-logo {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  html.gate-blocked .content-layer,
+  html.gate-blocked #scrollHint {
+    display: none;
+  }
+
   .card p {
     font-family: 'Source Serif Pro', Georgia, serif;
     font-size: 1rem;
@@ -383,13 +426,11 @@
     z-index: 1;
   }
 
-  .slide-mempelai-pria .card .label,
-  .slide-mempelai-wanita .card .label,
-  .slide-mempelai-pria .card .guest-name,
-  .slide-mempelai-wanita .card .guest-name,
-  .slide-mempelai-pria .card p,
-  .slide-mempelai-wanita .card p {
-    color: #550000;
+  @media (max-width: 700px) {
+    .slide-mempelai-pria .card,
+    .slide-mempelai-wanita .card {
+      padding: 1.5rem 1.25rem;
+    }
   }
 
   /* ─── Desktop: split-screen — foto di satu sisi, kartu di tengah sisi lain berlatar #B8B09B ──── */
@@ -421,6 +462,15 @@
 
     .slide-mempelai-wanita {
       flex-direction: row-reverse;
+    }
+
+    .slide-mempelai-pria .card .label,
+    .slide-mempelai-wanita .card .label,
+    .slide-mempelai-pria .card .guest-name,
+    .slide-mempelai-wanita .card .guest-name,
+    .slide-mempelai-pria .card p,
+    .slide-mempelai-wanita .card p {
+      color: #550000;
     }
 
     .slide-mempelai-pria .slide-spacer,
@@ -698,7 +748,7 @@
         <div class="hero-third hero-middle card card--plain">
           <div class="divider"></div>
           <p>kepada yang terhormat</p>
-          <h3 class="guest-name">Yatno &amp; Sisil</h3>
+          <h3 class="guest-name">Siapa kamu?</h3>
           
           <!-- <p>Dengan penuh sukacita, kami mengundang Anda untuk hadir merayakan hari istimewa kami.</p> -->
         </div>
@@ -776,7 +826,40 @@
 <!-- scroll hint -->
 <div class="scroll-hint" id="scrollHint">scroll ↓</div>
 
+<!-- gate: tampil satu-satunya kalau ?p tidak valid -->
+<div class="gate-page" id="gatePage">
+      <div class="gate-text">
+        <p class="label" style="margin-bottom:1rem;font-size:32px;">Mohon doa dan restu atas pernikahan kami</p>
+      </div>
+
+      <div class="gate-logo" aria-hidden="true">
+        <img src="assets/title_adidivetri_2.svg" alt="Adi &amp; Divetri" class="title-svg" style="max-width: 120px;">
+      </div>
+    </div>
+
+
 <script>
+  // ─── Nama tamu dari parameter URL (?p=...) ──────────────────────────────
+  const GUEST_MAP = {
+    asdf: "Yatno &amp; Sisil",
+    ruzhak: "Khinks and Queen"
+  };
+
+  (function() {
+    const p = new URLSearchParams(window.location.search).get("p");
+    const isValid = !!p && Object.prototype.hasOwnProperty.call(GUEST_MAP, p);
+
+    if (!isValid) {
+      document.documentElement.classList.add("gate-blocked");
+      return;
+    }
+
+    const guestNameEl = document.querySelector(".slide-hero .guest-name");
+    if (guestNameEl) {
+      guestNameEl.innerHTML = GUEST_MAP[p];
+    }
+  })();
+
   // ─── Foto untuk film roll ───────────────────────────────────────────────
   const photos = [
     "components/film-roll-loop/photos/0.JPG",
@@ -805,9 +888,8 @@
   }
 
   const track = document.getElementById("track");
+  const filmroll = document.querySelector(".filmroll");
   const expanded = buildPhotoList(photos);
-  const duration = expanded.length * SECS_PER_FRAME;
-  track.style.animationDuration = duration + "s";
   track.innerHTML = renderFrames(expanded) + renderFrames(expanded, true);
 
   // grain texture — generate sekali saat load
@@ -825,9 +907,80 @@
     document.getElementById("grain").style.backgroundImage = "url(" + c.toDataURL() + ")";
   })();
 
-  // touch pause/resume (pengganti :hover di mobile)
-  track.addEventListener("touchstart", () => track.classList.add("is-paused"),    { passive: true });
-  track.addEventListener("touchend",   () => track.classList.remove("is-paused"), { passive: true });
+  // ─── Autoplay geser otomatis via scrollLeft, tetap bisa discroll/drag manual ──
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    const halfWidth = track.scrollWidth / 2;
+    const pxPerSec = halfWidth / (expanded.length * SECS_PER_FRAME);
+    let paused = false;
+    let resumeTimer = null;
+    let lastTs = null;
+
+    function pauseAutoplay() {
+      paused = true;
+      clearTimeout(resumeTimer);
+    }
+
+    function scheduleResume(delay = 400) {
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => { paused = false; lastTs = null; }, delay);
+    }
+
+    function tick(ts) {
+      if (!paused) {
+        if (lastTs !== null) {
+          const dt = (ts - lastTs) / 1000;
+          filmroll.scrollLeft += pxPerSec * dt;
+          if (filmroll.scrollLeft >= halfWidth) {
+            filmroll.scrollLeft -= halfWidth;
+          }
+        }
+        lastTs = ts;
+      } else {
+        lastTs = null;
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    // interaksi manual (touch, wheel, drag) menghentikan autoplay sementara
+    filmroll.addEventListener("touchstart", pauseAutoplay, { passive: true });
+    filmroll.addEventListener("touchend",   () => scheduleResume(), { passive: true });
+    filmroll.addEventListener("wheel",      () => { pauseAutoplay(); scheduleResume(); }, { passive: true });
+
+    // drag-to-scroll dengan mouse (pengganti swipe di desktop)
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+
+    filmroll.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      pauseAutoplay();
+      filmroll.classList.add("is-dragging");
+      dragStartX = e.pageX;
+      dragStartScroll = filmroll.scrollLeft;
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      filmroll.scrollLeft = dragStartScroll - (e.pageX - dragStartX);
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (!isDragging) return;
+      isDragging = false;
+      filmroll.classList.remove("is-dragging");
+      scheduleResume();
+    });
+
+    // pause saat tab tidak aktif (hemat baterai)
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) pauseAutoplay();
+      else scheduleResume(0);
+    });
+  }
 
   // ─── Animasi label "Simpan Tanggal" saat slide masuk viewport ──────────
   const tanggalSlide = document.querySelector(".slide-tanggal");
