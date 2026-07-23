@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Film Filter Preview — Undangan Online</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0d0d0d;
+  color: #c8c0b4;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  padding: 32px 24px 48px;
+}
+
+h1 {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #e09a20;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #3a3028;
+  letter-spacing: 0.06em;
+  margin-bottom: 24px;
+}
+
+/* ── meta bar ── */
+.meta-bar {
+  background: #0c0b09;
+  padding: 7px 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid #1c1a14;
+}
+.mt {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #5a4820;
+  letter-spacing: 0.08em;
+}
+.mt b { color: #d4920e; font-weight: 500; letter-spacing: 0.12em; }
+.mt.ml { margin-left: auto; }
+
+/* ── film reel ── */
+.reel {
+  width: 100%;
+  background: #0a0a08;
+  padding: 14px 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 4px 4px;
+  margin-bottom: 28px;
+}
+
+.spr {
+  position: absolute;
+  left: 0; right: 0;
+  height: 14px;
+  background-color: #141210;
+  background-image: repeating-linear-gradient(to right, #0a0a08 0 6px, transparent 6px 20px);
+  background-size: 20px 100%;
+  z-index: 2;
+}
+.spr.t { top: 0; }
+.spr.b { bottom: 0; }
+
+.track {
+  display: flex;
+  width: max-content;
+  animation: filmScroll 21s linear infinite;
+}
+
+@keyframes filmScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track { animation: none; }
+}
+
+.frame {
+  flex: 0 0 auto;
+  width: 120px;
+  height: 160px;
+  margin: 0 5px;
+  border: 2px solid #252220;
+  position: relative;
+  overflow: hidden;
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: filter 0.45s ease;
+}
+
+.fnum {
+  position: absolute;
+  bottom: 4px; right: 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  color: #ff9800;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.ov {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.v-ov { transition: background 0.45s ease; }
+.g-ov { mix-blend-mode: overlay; background-size: 256px 256px; transition: opacity 0.45s ease; }
+.l-ov { transition: background 0.45s ease; }
+
+/* ── preset grid ── */
+.sec-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #3a3028;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.pgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  .pgrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.pcard {
+  background: #141210;
+  border: 1px solid #252220;
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  user-select: none;
+}
+
+.pcard:hover { border-color: #3a3020; background: #181614; }
+
+.pcard.active {
+  border-color: #d4920e;
+  background: #1a1408;
+}
+
+.pn {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #c8c0b4;
+  margin: 0 0 3px;
+  white-space: nowrap;
+}
+
+.pcard.active .pn { color: #e09a20; }
+
+.ps {
+  font-size: 10px;
+  color: #4a4038;
+  margin: 0 0 9px;
+  line-height: 1.4;
+}
+
+.tones {
+  display: flex;
+  gap: 2px;
+  border-radius: 3px;
+  overflow: hidden;
+  height: 10px;
+}
+
+.tone { flex: 1; }
+</style>
+</head>
+<body>
+
+<h1>Film Filter Preview</h1>
+<p class="subtitle">components/film-roll-loop · 6 preset · klik untuk preview</p>
+
+<div class="meta-bar">
+  <span class="mt">FILTER</span>
+  <span class="mt"><b id="mname">BAWAAN</b></span>
+  <span class="mt" id="msub">Tanpa koreksi warna</span>
+  <span class="mt ml">35mm · 6 frames</span>
+</div>
+
+<div class="reel">
+  <div class="spr t"></div>
+  <div class="track" id="track"></div>
+  <div class="spr b"></div>
+  <div class="ov v-ov" id="vov"></div>
+  <div class="ov g-ov" id="gov"></div>
+  <div class="ov l-ov" id="lov"></div>
+</div>
+
+<p class="sec-label">Pilih preset</p>
+<div class="pgrid" id="pgrid"></div>
+
+<script>
+const photos = [
+  'radial-gradient(ellipse at 40% 25%, #fdbcb4 0%, #c87941 45%, #7b4a2d 75%, #1a0a05 100%)',
+  'linear-gradient(180deg, #87ceeb 0%, #4aa8d5 35%, #c8b97a 58%, #5a7a40 78%, #1a2a10 100%)',
+  'radial-gradient(ellipse at 55% 48%, #ffa040 0%, #d45800 38%, #8b1a00 68%, #050302 100%)',
+  'linear-gradient(155deg, #0a1628 0%, #1a3050 30%, #0f2a20 65%, #030805 100%)',
+  'radial-gradient(ellipse at 50% 58%, #ffe0a0 0%, #ff8c20 35%, #c43a00 62%, #0f0500 100%)',
+  'linear-gradient(180deg, #b8cce0 0%, #7890a8 42%, #304050 72%, #0e1218 100%)',
+];
+
+const presets = [
+  { name: 'Bawaan',        sub: 'Tanpa koreksi warna',          f: 'contrast(1.05) saturate(0.95)',                                    grain: 0.03, vign: 0,    leak: null,                                                                    tones: ['#0f0e0c', '#706860', '#ddd5c8'] },
+  { name: 'Portra 400',    sub: 'Kodak · hangat · ISO 400',     f: 'sepia(0.12) contrast(1.04) brightness(1.07) saturate(1.15)',       grain: 0.06, vign: 0.28, leak: 'linear-gradient(to right, rgba(180,70,8,0.12), transparent 30%)',    tones: ['#241408', '#8c6440', '#f2dfc0'] },
+  { name: 'Kodachrome 64', sub: 'Kodak · vivid · ISO 64',       f: 'contrast(1.22) saturate(1.35) hue-rotate(-5deg) brightness(0.96)', grain: 0.09, vign: 0.44, leak: 'linear-gradient(to bottom, rgba(255,110,15,0.09), transparent 22%)', tones: ['#100a18', '#5c4478', '#f8f0e0'] },
+  { name: 'Faded Matte',   sub: 'Lo-fi · soft · lifted blacks', f: 'saturate(0.55) contrast(0.88) brightness(1.12)',                   grain: 0.04, vign: 0.15, leak: null,                                                                    tones: ['#2c2820', '#857e74', '#e8e2d8'] },
+  { name: 'Superia 400',   sub: 'Fujifilm · cool · ISO 400',    f: 'hue-rotate(8deg) saturate(0.88) contrast(1.1) brightness(1.02)',   grain: 0.07, vign: 0.22, leak: null,                                                                    tones: ['#0c1810', '#4a7050', '#c4d8c0'] },
+  { name: 'Monochrome',    sub: 'B&W · high contrast',          f: 'grayscale(1) contrast(1.18) brightness(1.04)',                     grain: 0.12, vign: 0.38, leak: null,                                                                    tones: ['#080808', '#606060', '#e8e8e8'] },
+];
+
+// grain texture
+(function() {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 256;
+  const ctx = c.getContext('2d');
+  const img = ctx.createImageData(256, 256);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const v = (Math.random() * 255) | 0;
+    d[i] = d[i+1] = d[i+2] = v; d[i+3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  document.getElementById('gov').style.backgroundImage = 'url(' + c.toDataURL() + ')';
+})();
+
+// build frames
+const track = document.getElementById('track');
+function buildFrames(hidden) {
+  photos.forEach((bg, i) => {
+    const fr = document.createElement('div');
+    fr.className = 'frame';
+    if (hidden) fr.setAttribute('aria-hidden', 'true');
+    const ph = document.createElement('div');
+    ph.className = 'photo';
+    ph.style.background = bg;
+    const fn = document.createElement('span');
+    fn.className = 'fnum';
+    fn.textContent = String(i + 1).padStart(2, '0');
+    fr.appendChild(ph); fr.appendChild(fn);
+    track.appendChild(fr);
+  });
+}
+buildFrames(false);
+buildFrames(true);
+
+// preset cards
+const pgrid = document.getElementById('pgrid');
+presets.forEach((p, i) => {
+  const card = document.createElement('div');
+  card.className = 'pcard' + (i === 0 ? ' active' : '');
+  card.innerHTML =
+    '<p class="pn">' + p.name + '</p>' +
+    '<p class="ps">' + p.sub + '</p>' +
+    '<div class="tones">' + p.tones.map(c => '<div class="tone" style="background:' + c + '"></div>').join('') + '</div>';
+  card.addEventListener('click', () => apply(i));
+  pgrid.appendChild(card);
+});
+
+function apply(idx) {
+  const p = presets[idx];
+  document.querySelectorAll('.photo').forEach(el => el.style.filter = p.f);
+  document.getElementById('vov').style.background = p.vign
+    ? 'radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(0,0,0,' + p.vign + ') 100%)'
+    : 'none';
+  document.getElementById('gov').style.opacity = p.grain;
+  document.getElementById('lov').style.background = p.leak || 'none';
+  document.getElementById('mname').textContent = p.name.toUpperCase();
+  document.getElementById('msub').textContent = p.sub;
+  document.querySelectorAll('.pcard').forEach((c, i) => c.classList.toggle('active', i === idx));
+}
+
+apply(0);
+</script>
+</body>
+</html>

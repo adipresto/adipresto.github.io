@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Undangan — Film Roll Background</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Dream Avenue';
+    src: url('fonts/dream-avenue-regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: #0d0d0d;
+  }
+
+  /* ─── Film roll: ~3/4 tinggi viewport, lebar penuh (konten slide Galeri) ─── */
+  .filmroll {
+    width: 100%;
+    height: 75vh;
+    height: 75dvh; /* dynamic viewport height — benar di mobile */
+    overflow: hidden;
+    background: #1a1a1a;
+    padding: 14px 0;
+    position: relative;
+    /* strip ini di bawah overlay */
+    z-index: 0;
+  }
+
+  /* lubang sprocket atas & bawah */
+  .filmroll::before,
+  .filmroll::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 14px;
+    background-image: repeating-linear-gradient(
+      to right,
+      #0d0d0d 0 6px,
+      transparent 6px 20px
+    );
+    background-size: 20px 100%;
+    z-index: 2;
+  }
+  .filmroll::before { top: 0; }
+  .filmroll::after  { bottom: 0; }
+
+  .filmroll-track {
+    display: flex;
+    width: max-content;
+    height: 100%;
+    animation: scrollLeft 32s linear infinite;
+  }
+
+  .filmroll-track.is-paused {
+    animation-play-state: paused;
+  }
+
+  @keyframes scrollLeft {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  .frame {
+    flex: 0 0 auto;
+    /* tinggi frame = tinggi track dikurangi sprocket atas+bawah (28px) */
+    height: calc(100% - 28px);
+    aspect-ratio: 3 / 4;
+    margin: 14px 6px;
+    background: #000;
+    border: 3px solid #2b2b2b;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: sepia(0.12) contrast(1.04) brightness(1.07) saturate(1.15);
+  }
+
+  /* vignette per-frame */
+  .frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(0,0,0,0.28) 100%);
+    pointer-events: none;
+  }
+
+  /* grain overlay */
+  .filmroll-grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    opacity: 0.06;
+    background-size: 256px 256px;
+    z-index: 3;
+  }
+
+  /* light leak oranye dari kiri */
+  .filmroll-leak {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(180, 70, 8, 0.12), transparent 30%);
+    z-index: 3;
+  }
+
+  .frame-number {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-family: monospace;
+    font-size: 10px;
+    color: #B8B09B;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  /* ─── prefers-reduced-motion: hentikan animasi ───────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .filmroll-track {
+      animation: none;
+      /* tampilkan satu baris, bungkus */
+      flex-wrap: wrap;
+      height: auto;
+      width: 100%;
+      justify-content: center;
+    }
+    .filmroll-track .frame[aria-hidden="true"] {
+      display: none;
+    }
+    .filmroll {
+      height: auto;
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+  }
+
+  /* ─── Content layer: scroll container, satu slide per "langkah" scroll ─── */
+  .content-layer {
+    position: relative;
+    z-index: 10;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* setiap "slide" setinggi satu viewport, berhenti pas di setiap slide */
+  .slide {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .content-layer {
+      scroll-snap-type: none;
+    }
+  }
+
+  /* ─── Slide Hero (cover): foto full-bleed, teks mengambang di atasnya ──── */
+  .slide-hero {
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('assets/amplome-cropped.png') center/cover no-repeat;
+  }
+
+  /* gelapkan foto hero biar teks lebih kebaca — ganti angka opacity di sini buat atur manual */
+  .hero-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 3rem 2.5rem;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    color: #B8B09B;
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+
+  /* pakai gaya teks .card (label/guest-name/paragraf) tanpa tampilan kotaknya */
+  .card--plain {
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    max-width: none;
+  }
+
+  /* ─── Kartu Hero: dibagi 3 bagian sama tinggi — judul (1/3), kosong (2/3), tamu (3/3) ──── */
+  .hero-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 70vh;
+    min-height: 70dvh;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    color: #B8B09B;
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+
+  .hero-third {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .card .label {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(184, 176, 155, 0.63);
+    margin-bottom: 1.25rem;
+  }
+
+  .card h1 {
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: #B8B09B;
+    margin-bottom: 0.5rem;
+  }
+
+  .title-svg {
+    max-width: 240px;
+    width: 95%;
+    height: auto;
+    margin-bottom: 0.5rem;
+    align-self: center;
+  }
+
+  .card h2 {
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    font-weight: 400;
+    color: #B8B09B;
+    margin-bottom: 2rem;
+  }
+
+  .card .divider {
+    width: 48px;
+    height: 1px;
+    background: #ff9800;
+    margin: 0 auto 1.5rem;
+  }
+
+  .card p {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: rgba(184, 176, 155, 0.63);
+  }
+
+  .card .guest-name {
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 400;
+    color: #B8B09B;
+    margin-bottom: 1rem;
+  }
+
+  /* nama tamu undangan di hero dibesarkan supaya lebih menonjol dari logo */
+  .hero-card .hero-middle .guest-name {
+    font-size: clamp(2.2rem, 7vw, 3.2rem);
+  }
+
+  .card .date {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    margin-top: 2rem;
+    font-size: 1.1rem;
+    color: rgba(184, 176, 155, 0.63);
+    letter-spacing: 0.1em;
+  }
+
+  .card .venue {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.9rem;
+    color: rgba(184, 176, 155, 0.63);
+    margin-top: 0.5rem;
+  }
+
+  /* ─── Slide Mempelai Pria & Wanita: foto full-bleed sebagai background, sama pola dengan hero ──── */
+  .slide-mempelai-pria,
+  .slide-mempelai-wanita {
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* kosongkan 2/3 bagian atas slide, kartu nama ditempatkan di 1/3 bawah */
+  .slide-mempelai-pria .slide-spacer,
+  .slide-mempelai-wanita .slide-spacer {
+    flex: 2 1 0;
+  }
+
+  .slide-mempelai-pria .card-bottom,
+  .slide-mempelai-wanita .card-bottom {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mempelai-pria-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('components/film-roll-loop/photos/12.jpeg') center/cover no-repeat;
+  }
+
+  .mempelai-wanita-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('components/film-roll-loop/photos/11.jpeg') center/cover no-repeat;
+  }
+
+  .mempelai-pria-photo::after,
+  .mempelai-wanita-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .slide-mempelai-pria .card,
+  .slide-mempelai-wanita .card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .slide-mempelai-pria .card .label,
+  .slide-mempelai-wanita .card .label,
+  .slide-mempelai-pria .card .guest-name,
+  .slide-mempelai-wanita .card .guest-name,
+  .slide-mempelai-pria .card p,
+  .slide-mempelai-wanita .card p {
+    color: #550000;
+  }
+
+  /* ─── Desktop: split-screen — foto di satu sisi, kartu di tengah sisi lain berlatar #B8B09B ──── */
+  @media (min-width: 701px) {
+    /* amplome-cropped.png (741×536, rasio ~1.38) masih lebih sempit dari layar sangat lebar (1.6–1.78) →
+       kalau full-bleed, cover crop horizontal jadi berlebihan. Solusi: batasi lebar foto sesuai
+       aspect-ratio aslinya (letterbox), sisanya diisi gradasi warna senada amplop, dan tepi foto
+       di-mask supaya melebur halus ke warna latar. */
+    .slide-hero {
+      background: linear-gradient(to bottom, #471614 0%, #370D0B 50%, #2C070A 100%);
+    }
+
+    .hero-photo {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      aspect-ratio: 741 / 536;
+      width: auto;
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 140px, #000 calc(100% - 140px), transparent);
+      mask-image: linear-gradient(to right, transparent, #000 140px, #000 calc(100% - 140px), transparent);
+    }
+
+    .slide-mempelai-pria,
+    .slide-mempelai-wanita {
+      flex-direction: row;
+      background-color: #B8B09B;
+      padding: 0;
+    }
+
+    .slide-mempelai-wanita {
+      flex-direction: row-reverse;
+    }
+
+    .slide-mempelai-pria .slide-spacer,
+    .slide-mempelai-wanita .slide-spacer {
+      display: none;
+    }
+
+    .mempelai-pria-photo,
+    .mempelai-wanita-photo {
+      position: relative;
+      inset: auto;
+      width: 50%;
+      align-self: stretch;
+      flex-shrink: 0;
+    }
+
+    .mempelai-pria-photo::after,
+    .mempelai-wanita-photo::after {
+      background: none;
+    }
+
+    /* gradasi dari tepi foto melebur ke warna latar */
+    .mempelai-pria-photo::before,
+    .mempelai-wanita-photo::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 140px;
+      z-index: 1;
+    }
+
+    .mempelai-pria-photo::before {
+      right: 0;
+      background: linear-gradient(to right, transparent, #B8B09B);
+    }
+
+    .mempelai-wanita-photo::before {
+      left: 0;
+      background: linear-gradient(to left, transparent, #B8B09B);
+    }
+
+    .slide-mempelai-pria .card-bottom,
+    .slide-mempelai-wanita .card-bottom {
+      width: 50%;
+      align-self: stretch;
+    }
+  }
+
+  /* ─── Slide Tanggal Pernikahan: foto full-bleed + kartu tanggal besar & countdown ──── */
+  .slide-tanggal {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tanggal-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('components/film-roll-loop/photos/10cut.jpg') center/cover no-repeat;
+  }
+
+  .tanggal-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .slide-tanggal .card {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* label "Simpan Tanggal" bergaya tombol pill beneran (klik = simpan ke kalender), sparkle berulang selama slide terlihat */
+  .slide-tanggal .label {
+    position: relative;
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    border: 1px solid rgba(255, 152, 0, 0.6);
+    border-radius: 999px;
+    background: rgba(255, 152, 0, 0.08);
+    opacity: 0;
+    transform: scale(0.75) translateY(10px);
+    /* reset tampilan default <button> — tipografi (font/uppercase/letter-spacing) tetap ikut aturan .card .label di atas */
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background 0.2s ease;
+  }
+
+  .slide-tanggal .label:hover,
+  .slide-tanggal .label:focus-visible {
+    background: rgba(255, 152, 0, 0.18);
+  }
+
+  .slide-tanggal .label:active {
+    background: rgba(255, 152, 0, 0.28);
+  }
+
+  .slide-tanggal.in-view .label {
+    animation: labelPopIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  @keyframes labelPopIn {
+    0%   { opacity: 0; transform: scale(0.75) translateY(10px); }
+    60%  { opacity: 1; transform: scale(1.08) translateY(0); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .slide-tanggal .sparkle {
+    position: absolute;
+    color: #B8B09B;
+    font-size: 0.7rem;
+    opacity: 0;
+    pointer-events: none;
+    text-shadow: 0 0 4px rgba(255, 152, 0, 0.8);
+  }
+
+  .slide-tanggal .spk1 { top: -6px;  left: 6px; }
+  .slide-tanggal .spk2 { bottom: -8px; right: 18px; font-size: 0.55rem; }
+  .slide-tanggal .spk3 { top: -2px; right: -4px; font-size: 0.85rem; }
+
+  /* infinite: terus twinkle selama class in-view menempel, restart tiap kali slide masuk viewport lagi */
+  .slide-tanggal.in-view .spk1 { animation: sparkleTwinkle 1.6s ease-in-out 0.5s infinite; }
+  .slide-tanggal.in-view .spk2 { animation: sparkleTwinkle 1.6s ease-in-out 1s infinite; }
+  .slide-tanggal.in-view .spk3 { animation: sparkleTwinkle 1.6s ease-in-out 1.4s infinite; }
+
+  @keyframes sparkleTwinkle {
+    0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+    50%      { opacity: 1; transform: scale(1) rotate(20deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide-tanggal .label {
+      opacity: 1;
+      transform: none;
+    }
+    .slide-tanggal.in-view .label {
+      animation: none;
+    }
+    .slide-tanggal .sparkle,
+    .slide-tanggal.in-view .sparkle {
+      display: none;
+    }
+  }
+
+  .date-big {
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(2.4rem, 9vw, 4rem);
+    color: #B8B09B;
+    line-height: 1;
+    margin: 0.5rem 0 1.5rem;
+    letter-spacing: 0.02em;
+  }
+
+  .date-big .date-sep {
+    color: #B8B09B;
+    margin: 0 0.15em;
+    font-size: 0.7em;
+    vertical-align: middle;
+  }
+
+  .countdown {
+    display: flex;
+    justify-content: center;
+    gap: clamp(0.75rem, 3vw, 1.5rem);
+    margin-top: 1.5rem;
+  }
+
+  .cd-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 56px;
+  }
+
+  .cd-num {
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    color: #B8B09B;
+    line-height: 1;
+  }
+
+  .cd-label {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(184, 176, 155, 0.63);
+    margin-top: 0.5rem;
+  }
+
+  .slide-resepsi {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .resepsi-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('components/film-roll-loop/photos/6.JPG') center/cover no-repeat;
+  }
+
+  .resepsi-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .slide-resepsi .card {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── Slide Galeri: film roll sebagai konten, bukan lagi background ──── */
+  .slide-galeri {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .slide-galeri .label {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(184, 176, 155, 0.63);
+    text-align: center;
+  }
+
+  .slide-galeri-inner {
+    width: 100%;
+  }
+
+  .scroll-hint {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    color: rgba(184,176,155,0.4);
+    font-family: monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-align: center;
+    animation: fadeUpDown 2s ease-in-out infinite;
+  }
+
+  @keyframes fadeUpDown {
+    0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+    50%       { opacity: 0.9; transform: translateX(-50%) translateY(-6px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-hint { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── Content slides ───────────────────────────────────────────────────── -->
+<main class="content-layer">
+
+  <section class="slide slide-hero">
+    <div class="hero-photo" aria-hidden="true"></div>
+    <div class="hero-content">
+      <div class="hero-card">
+        <div class="hero-third hero-top text-center card card--plain">
+          <p class="label" style="margin-bottom:1rem;font-size:16px;">Undangan Pernikahan</p>
+          <img src="assets/title_adidivetri_2.svg" alt="Adi &amp; Divetri" class="title-svg">
+        </div>
+        <div class="hero-third hero-middle card card--plain">
+          <div class="divider"></div>
+          <p>kepada yang terhormat</p>
+          <h3 class="guest-name">Yatno &amp; Sisil</h3>
+          
+          <!-- <p>Dengan penuh sukacita, kami mengundang Anda untuk hadir merayakan hari istimewa kami.</p> -->
+        </div>
+        <div class="hero-third hero-bottom" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide slide-mempelai-pria">
+    <div class="mempelai-pria-photo" aria-hidden="true"></div>
+    <div class="slide-spacer" aria-hidden="true"></div>
+    <div class="card-bottom">
+      <div class="card">
+        <p class="label">Mempelai Pria</p>
+        <h3 class="guest-name">M. Rizky Adi Prasetyo</h3>
+        <div class="divider"></div>
+        <p>Putra dari (Alm.) Bapak Suharto &amp; (Almh.) Ibu Lastri</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide slide-mempelai-wanita">
+    <div class="mempelai-wanita-photo" aria-hidden="true"></div>
+    <div class="slide-spacer" aria-hidden="true"></div>
+    <div class="card-bottom">
+      <div class="card">
+        <p class="label">Mempelai Wanita</p>
+        <h3 class="guest-name">Divetri Ayu Rahmawati</h3>
+        <div class="divider"></div>
+        <p>Putri dari Bapak Slamet Riyadi &amp; (Almh.) Ibu Ning</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide slide-tanggal">
+    <div class="tanggal-photo" aria-hidden="true"></div>
+    <div class="card">
+      <button type="button" class="label" id="saveDateBtn"><span class="sparkle spk1" aria-hidden="true">✦</span>Simpan Tanggal<span class="sparkle spk2" aria-hidden="true">✦</span><span class="sparkle spk3" aria-hidden="true">✦</span></button>
+      <div class="date-big">29<span class="date-sep">·</span>08<span class="date-sep">·</span>2026</div>
+      <div class="divider"></div>
+      <div class="countdown" id="countdown">
+        <div class="cd-item"><span class="cd-num" id="cd-days">00</span><span class="cd-label">Hari</span></div>
+        <div class="cd-item"><span class="cd-num" id="cd-hours">00</span><span class="cd-label">Jam</span></div>
+        <div class="cd-item"><span class="cd-num" id="cd-mins">00</span><span class="cd-label">Menit</span></div>
+        <div class="cd-item"><span class="cd-num" id="cd-secs">00</span><span class="cd-label">Detik</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide slide-resepsi">
+    <div class="resepsi-photo" aria-hidden="true"></div>
+    <div class="card">
+      <p class="label">Resepsi</p>
+      <h2>Selamat Datang</h2>
+      <div class="divider"></div>
+      <p>Kehadiran dan doa restu Anda adalah hadiah terbesar bagi kami.</p>
+      <p class="date">Pukul 11.00 – 14.00 WIB</p>
+      <p class="venue">Grand Ballroom Hotel Mulia<br>Jl. Asia Afrika, Jakarta</p>
+    </div>
+  </section>
+
+  <section class="slide slide-galeri">
+    <p class="label">Galeri</p>
+    <div class="slide-galeri-inner">
+      <div class="filmroll">
+        <div class="filmroll-track" id="track"></div>
+        <div class="filmroll-grain" id="grain"></div>
+        <div class="filmroll-leak"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- scroll hint -->
+<div class="scroll-hint" id="scrollHint">scroll ↓</div>
+
+<script>
+  // ─── Foto untuk film roll ───────────────────────────────────────────────
+  const photos = [
+    "components/film-roll-loop/photos/0.JPG",
+    "components/film-roll-loop/photos/2.JPG",
+    "components/film-roll-loop/photos/3.JPG",
+    "components/film-roll-loop/photos/4.JPG",
+    "components/film-roll-loop/photos/5.JPG",
+  ];
+
+  const SECS_PER_FRAME = 16;
+
+  function buildPhotoList(list) {
+    const MIN_VISIBLE = 8;
+    let out = [...list];
+    while (out.length < MIN_VISIBLE) out = [...out, ...list];
+    return out;
+  }
+
+  function renderFrames(list, isHidden = false) {
+    return list.map((src, i) => `
+      <div class="frame"${isHidden ? ' aria-hidden="true"' : ""}>
+        <img src="${src}" alt="${isHidden ? "" : "foto " + (i + 1)}" loading="eager">
+        <span class="frame-number">${String(i + 1).padStart(2, "0")}</span>
+      </div>
+    `).join("");
+  }
+
+  const track = document.getElementById("track");
+  const expanded = buildPhotoList(photos);
+  const duration = expanded.length * SECS_PER_FRAME;
+  track.style.animationDuration = duration + "s";
+  track.innerHTML = renderFrames(expanded) + renderFrames(expanded, true);
+
+  // grain texture — generate sekali saat load
+  (function() {
+    const c = document.createElement("canvas");
+    c.width = 256; c.height = 256;
+    const ctx = c.getContext("2d");
+    const img = ctx.createImageData(256, 256);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = (Math.random() * 255) | 0;
+      d[i] = d[i+1] = d[i+2] = v; d[i+3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    document.getElementById("grain").style.backgroundImage = "url(" + c.toDataURL() + ")";
+  })();
+
+  // touch pause/resume (pengganti :hover di mobile)
+  track.addEventListener("touchstart", () => track.classList.add("is-paused"),    { passive: true });
+  track.addEventListener("touchend",   () => track.classList.remove("is-paused"), { passive: true });
+
+  // ─── Animasi label "Simpan Tanggal" saat slide masuk viewport ──────────
+  const tanggalSlide = document.querySelector(".slide-tanggal");
+  if (tanggalSlide) {
+    const tanggalObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        tanggalSlide.classList.toggle("in-view", entry.isIntersecting);
+      });
+    }, { threshold: 0.4 });
+    tanggalObserver.observe(tanggalSlide);
+  }
+
+  // ─── Simpan ke kalender (.ics) ──────────────────────────────────────────
+  const saveDateBtn = document.getElementById("saveDateBtn");
+  if (saveDateBtn) {
+    saveDateBtn.addEventListener("click", () => {
+      const pad = n => String(n).padStart(2, "0");
+      const toICSDate = date => (
+        date.getUTCFullYear() + pad(date.getUTCMonth() + 1) + pad(date.getUTCDate()) +
+        "T" + pad(date.getUTCHours()) + pad(date.getUTCMinutes()) + pad(date.getUTCSeconds()) + "Z"
+      );
+
+      // acara resepsi: 29 Agustus 2026, 11.00–14.00 WIB (UTC+7)
+      const eventStart = new Date("2026-08-29T11:00:00+07:00");
+      const eventEnd = new Date("2026-08-29T14:00:00+07:00");
+
+      const ics = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Undangan Adi & Divetri//ID",
+        "CALSCALE:GREGORIAN",
+        "BEGIN:VEVENT",
+        "UID:" + Date.now() + "@undangan-adi-divetri",
+        "DTSTAMP:" + toICSDate(new Date()),
+        "DTSTART:" + toICSDate(eventStart),
+        "DTEND:" + toICSDate(eventEnd),
+        "SUMMARY:Pernikahan M. Rizky Adi Prasetyo & Divetri Ayu Rahmawati",
+        "LOCATION:Grand Ballroom Hotel Mulia\\, Jl. Asia Afrika\\, Jakarta",
+        "DESCRIPTION:Kehadiran dan doa restu Anda adalah hadiah terbesar bagi kami.",
+        "END:VEVENT",
+        "END:VCALENDAR",
+      ].join("\r\n");
+
+      const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "pernikahan-adi-divetri.ics";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  // ─── Countdown menuju tanggal pernikahan ───────────────────────────────
+  const WEDDING_DATE = new Date("2026-08-29T08:00:00+07:00");
+
+  function updateCountdown() {
+    const diff = WEDDING_DATE - new Date();
+    const els = {
+      days: document.getElementById("cd-days"),
+      hours: document.getElementById("cd-hours"),
+      mins: document.getElementById("cd-mins"),
+      secs: document.getElementById("cd-secs"),
+    };
+    if (!els.days) return;
+    if (diff <= 0) {
+      els.days.textContent = els.hours.textContent = els.mins.textContent = els.secs.textContent = "00";
+      return;
+    }
+    const pad = n => String(n).padStart(2, "0");
+    els.days.textContent = pad(Math.floor(diff / 86400000));
+    els.hours.textContent = pad(Math.floor(diff / 3600000) % 24);
+    els.mins.textContent = pad(Math.floor(diff / 60000) % 60);
+    els.secs.textContent = pad(Math.floor(diff / 1000) % 60);
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  // ─── Sembunyikan scroll hint setelah user scroll ───────────────────────
+  const hint = document.getElementById("scrollHint");
+  const scrollContainer = document.querySelector(".content-layer");
+  scrollContainer.addEventListener("scroll", () => {
+    if (scrollContainer.scrollTop > 80) hint.style.display = "none";
+  }, { passive: true, once: true });
+
+  // ─── Pause animasi saat tab tidak aktif ───────────────────────────────
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      track.classList.add("is-paused");
+    } else {
+      track.classList.remove("is-paused");
+    }
+  });
+</script>
+
+</body>
+</html>
