@@ -1,6 +1,6 @@
 # Ringkasan Docs
 
-Ringkasan ini digenerate dari `docs/knowledge-graph.md` (v1.11) — dokumen itu adalah satu-satunya sumber requirements proyek. Update ringkasan ini setiap kali knowledge graph berubah.
+Ringkasan ini digenerate dari `docs/knowledge-graph.md` (v1.13) — dokumen itu adalah satu-satunya sumber requirements proyek. Update ringkasan ini setiap kali knowledge graph berubah.
 
 ## Permintaan Utama
 
@@ -34,7 +34,7 @@ Komponen ini berada di `components/film-roll-loop/film-roll-loop.html`. Film rol
 
 ## Film Roll Loop — Implementasi
 
-`loading="lazy"` diganti `loading="eager"` di dalam strip horizontal agar semua foto preload dari awal dan menghindari pop-in telat. `touchstart`/`touchend` dipakai untuk pause/resume animasi di touchscreen — pengganti `:hover` yang tidak berjalan di mobile. Animasi di-pause via `document.visibilitychange` saat tab tidak aktif untuk hemat baterai. Sistem filter kamera film (`impl-film-filter`) menerapkan CSS filter per-foto, canvas grain overlay (`mix-blend-mode: overlay`), vignette radial-gradient per-frame, dan light leak gradient — preset default Portra 400.
+`loading="lazy"` diganti `loading="eager"` di dalam strip horizontal agar semua foto preload dari awal dan menghindari pop-in telat. Di `index.html`, film roll bisa digeser manual (drag mouse, swipe touch, scroll wheel) via `overflow-x: auto` native — autoplay-nya sendiri diubah dari CSS `@keyframes` menjadi JS `requestAnimationFrame` yang menggerakkan `scrollLeft`, supaya scroll manual user dan autoplay tidak saling menimpa. `touchstart`/`touchend`, drag mouse, dan scroll wheel dipakai untuk pause/resume autoplay sementara — pengganti `:hover` yang tidak berjalan di mobile. Autoplay di `index.html` sengaja tidak lagi di-pause via `document.visibilitychange` (sempat dicoba, tapi bikin animasi terasa berhenti/tidak reliable resume-nya) — jadi tetap jalan terus selama tidak ada interaksi manual aktif. Sistem filter kamera film (`impl-film-filter`) menerapkan CSS filter per-foto, canvas grain overlay (`mix-blend-mode: overlay`), vignette radial-gradient per-frame, dan light leak gradient — preset default Portra 400.
 
 ---
 
@@ -67,3 +67,9 @@ Di bawah dua kartu itu ada kartu info waktu & tempat akad.
 Font header (`h1`, `h2`) memakai **Dream Avenue Regular**, dimuat lewat `@font-face` lokal dari `fonts/dream-avenue-regular.otf` (bukan CDN — cdnfonts.com pernah dicoba tapi gagal load). Font teks kecil (`.label`, `p`, `.date`, `.venue`) memakai **Source Serif Pro** (Google Fonts).
 
 Palet warna resmi yang direncanakan untuk kartu konten: teks header `#5a1919`, teks kecil `#6c4440` dengan opacity 63% (`rgba(108, 68, 64, 0.63)`). Palet ini **belum aktif** di implementasi saat ini — warna aktif untuk sementara diganti putih (`#ffffff` untuk header, `rgba(255, 255, 255, 0.63)` untuk teks kecil) sambil menunggu keputusan final dari user. Font-family tetap sama di kedua varian warna.
+
+---
+
+## Slide Simpan Tanggal
+
+Slide berisi tombol pill "Simpan Tanggal" (`#saveDateBtn`) dengan animasi sparkle berulang saat slide masuk viewport, dideteksi lewat `IntersectionObserver`. Klik tombol membuka tab baru ke `calendar.google.com/calendar/render` dengan parameter `action=TEMPLATE`, `text`, `dates` (dikonversi ke UTC dari jadwal resepsi 29 Agustus 2026, 11.00–14.00 WIB), `location`, dan `details` — event otomatis terisi tanpa perlu backend atau OAuth. Ini menggantikan pendekatan sebelumnya yang men-download file `.ics` via Blob; trade-off-nya, user Apple Calendar/Outlook tidak lagi terlayani otomatis dan harus menambahkan event secara manual.

@@ -2,11 +2,45 @@
 
 Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar konsep (node) dan relasi antar konsep (edge).
 
-**Versi saat ini: v1.11**
+**Versi saat ini: v2.1**
 
 ---
 
 ## Changelog
+
+### v2.1 — 2026-07-27
+- Tambah node komponen: `slide-ayat` — slide baru kedua di `page-filmroll-demo` (setelah Hero, sebelum Mempelai Pria), kartu berlatar polos berisi judul surah "سُورَةُ الرُّومِ", label "Ar-Rum · Ayat 21", dan lafaz Basmalah "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+- Update node halaman: `page-filmroll-demo` — urutan slide aktual: Hero → Ayat → Mempelai Pria → Mempelai Wanita → Tanggal → Resepsi → Galeri
+- Tambah edge: `page-filmroll-demo` → `slide-ayat`
+- Total: 62 node · 78 edge
+
+### v2.0 — 2026-07-24
+- **Restrukturisasi besar**: `slide-akad` (dua kartu mempelai berdampingan dalam satu slide) dihapus — implementasi aktual di `index.html` memisahkannya jadi dua slide penuh terpisah: `slide-mempelai-pria` dan `slide-mempelai-wanita`, masing-masing dengan foto full-bleed sendiri (bukan grid 2 kolom dalam satu slide)
+- Tambah node komponen: `slide-mempelai-pria` — slide kedua, foto `photos/12.jpeg` full-bleed, kartu nama & orang tua mempelai pria
+- Tambah node komponen: `slide-mempelai-wanita` — slide ketiga, foto `photos/11.jpeg` full-bleed, kartu nama & orang tua mempelai wanita
+- Tambah node komponen: `slide-resepsi` — slide kelima (setelah `slide-tanggal`), foto `photos/6.JPG` full-bleed dengan overlay gelap, info waktu (11.00–14.00 WIB) & lokasi (Grand Ballroom Hotel Mulia, Jakarta)
+- Tambah node impl: `impl-mempelai-split` — dua slide `mempelai-pria`/`mempelai-wanita` masing-masing full-bleed foto sendiri dengan overlay gelap penuh di mobile; di desktop (≥701px) berubah jadi layout dua panel berdampingan (foto 50% + card-bottom 50%) dengan gradient fade di tepi foto ke warna latar `#B8B09B`, menggantikan `impl-couple-cards` (satu slide dua kartu) dan `impl-akad-responsive-bg`
+- Hapus node impl: `impl-couple-cards` dan `impl-akad-responsive-bg` — digantikan `impl-mempelai-split`
+- Tambah node impl: `impl-guest-gate` — gate akses berbasis parameter URL `?p=<kode>`; kode dicocokkan ke `GUEST_MAP` (map kode → nama tamu). Jika kode tidak valid/tidak ada, `<html>` dapat class `gate-blocked` yang menampilkan halaman gate penuh ("Mohon doa dan restu..."). Jika valid, nama tamu disuntik ke `.slide-hero .guest-name` menggantikan teks default "Siapa kamu?"
+- Tambah node impl: `impl-countdown` — hitung mundur real-time (hari/jam/menit/detik) menuju `2026-08-29T08:00:00+07:00`, ditampilkan di `slide-tanggal` (`#countdown`), update via interval JS
+- Update node komponen: `slide-tanggal` — kini juga menampilkan countdown (`impl-countdown`) selain tombol Simpan Tanggal
+- Update node halaman: `page-filmroll-demo` — urutan slide aktual: Hero → Mempelai Pria → Mempelai Wanita → Tanggal → Resepsi → Galeri; ditambah gate akses (`impl-guest-gate`) yang membungkus seluruh halaman
+- Tambah edge: `page-filmroll-demo` → `slide-mempelai-pria`, `page-filmroll-demo` → `slide-mempelai-wanita`, `page-filmroll-demo` → `slide-resepsi`, `page-filmroll-demo` → `impl-guest-gate`, `slide-mempelai-pria` → `impl-mempelai-split`, `slide-mempelai-wanita` → `impl-mempelai-split`, `slide-tanggal` → `impl-countdown`
+- Hapus edge: `page-filmroll-demo` → `slide-akad`, `slide-akad` → `ec-filesize`, `slide-akad` → `impl-couple-cards`, `slide-akad` → `impl-akad-responsive-bg`
+- Total: 61 node · 77 edge
+
+### v1.13 — 2026-07-24
+- Tambah node komponen: `slide-tanggal` — slide berisi tombol "Simpan Tanggal" (`#saveDateBtn`), animasi sparkle aktif saat slide masuk viewport via `IntersectionObserver`
+- Tambah node impl: `impl-save-gcal` — klik tombol "Simpan Tanggal" membuka tab baru ke `calendar.google.com/calendar/render?action=TEMPLATE&...` dengan judul, tanggal/waktu (29 Agustus 2026, 11.00–14.00 WIB dikonversi ke UTC), lokasi, dan deskripsi acara sudah terisi otomatis. Menggantikan pendekatan sebelumnya (download file `.ics` via Blob) — trade-off: sekali klik langsung ke Google Calendar, tapi user Apple Calendar/Outlook tidak lagi terlayani otomatis.
+- Tambah 2 edge baru: `page-filmroll-demo` → `slide-tanggal`, `slide-tanggal` → `impl-save-gcal`
+- Total: 58 node · 74 edge
+
+### v1.12 — 2026-07-24
+- Tambah node impl: `impl-manual-scroll` — film roll di `slide-galeri` kini bisa digeser manual secara horizontal (drag mouse, swipe touch, scroll wheel) via `overflow-x: auto` native pada `.filmroll`, menggantikan strip yang sebelumnya cuma bisa di-pause tapi tidak bisa digeser
+- Update node impl: `impl-touch-pause` — mekanisme autoplay diubah dari CSS `@keyframes` + `animation-play-state` menjadi JS `requestAnimationFrame` yang menggerakkan `scrollLeft` langsung, supaya tidak bentrok dengan scroll/drag manual user; pause kini berupa flag JS (bukan toggle class `.is-paused` pada elemen animasi)
+- Tambah 1 edge baru: `film-roll` → `impl-manual-scroll`
+- Revisi `impl-manual-scroll`: percobaan pause-on-`visibilitychange` di `index.html` dibatalkan (bikin animasi terasa berhenti/tidak reliable resume-nya di beberapa konteks viewport) — autoplay sekarang hanya pause saat ada interaksi manual aktif (touch/wheel/drag), resume ~0.4 detik setelahnya
+- Total: 56 node · 72 edge
 
 ### v1.11 — 2026-07-23
 - Tambah node impl: `impl-compress-script` — skrip `scripts/compress-image.py` (Python + Pillow) untuk kompres gambar koleksi film-roll: resize ke lebar 667px, JPEG kualitas 82, dukung batch/suffix/output-dir
@@ -100,12 +134,16 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 | slide-scroll | Konten Slide | Konten isi halaman bergeser seperti slide presentasi saat user melakukan scroll. |
 | slide-galeri | Slide Galeri | Slide terakhir di `page-filmroll-demo` yang menampilkan film-roll-loop sebagai konten (bukan lagi background fixed). |
 | slide-hero | Slide Hero (Cover) | Slide pertama di `page-filmroll-demo` — layout split-screen: foto full-bleed di kanan, teks undangan di area hitam kiri. Judul pasangan pakai gambar SVG (`assets/tittle_adidivetri.svg`), bukan teks `<h1>`. Responsive: stack vertikal di mobile. |
-| slide-akad | Slide Akad Nikah | Slide kedua di `page-filmroll-demo` — background foto full-bleed (`photos/1.JPG`) dengan overlay gelap. Isi: dua kartu mempelai berdampingan (pria & wanita, masing-masing nama + nama orang tua) di atas kartu info waktu & tempat akad. |
+| slide-ayat | Slide Ayat Ar-Rum | Slide kedua di `page-filmroll-demo` — kartu berlatar polos gelap berisi judul surah "سُورَةُ الرُّومِ", label "Ar-Rum · Ayat 21", dan lafaz Basmalah dalam huruf Arab. |
+| slide-mempelai-pria | Slide Mempelai Pria | Slide ketiga di `page-filmroll-demo` — foto full-bleed `photos/12.jpeg`, kartu nama mempelai pria (M. Rizky Adi Prasetyo) + nama orang tua. |
+| slide-mempelai-wanita | Slide Mempelai Wanita | Slide keempat di `page-filmroll-demo` — foto full-bleed `photos/11.jpeg`, kartu nama mempelai wanita (Divetri Ayu Rahmawati) + nama orang tua. |
+| slide-tanggal | Slide Simpan Tanggal | Slide berisi tombol pill "Simpan Tanggal" (`#saveDateBtn`) dengan sparkle berulang saat slide terlihat di viewport, plus countdown real-time (`#countdown`) menuju tanggal pernikahan. Klik tombol membuka Google Calendar dengan event terisi otomatis. |
+| slide-resepsi | Slide Resepsi | Slide kelima di `page-filmroll-demo` — foto full-bleed `photos/6.JPG` dengan overlay gelap, info waktu (11.00–14.00 WIB) dan lokasi (Grand Ballroom Hotel Mulia, Jakarta). |
 
 ### Halaman
 | ID | Label | Deskripsi |
 |----|-------|-----------|
-| page-filmroll-demo | Halaman Film Roll BG | Halaman utama undangan (entry point proyek), path `index.html`. Slide Undangan/Akad/Resepsi berlatar polos gelap; film roll loop kini jadi konten di slide terakhir "Galeri" (`slide-galeri`), bukan lagi background fixed di seluruh halaman. |
+| page-filmroll-demo | Halaman Film Roll BG | Halaman utama undangan (entry point proyek), path `index.html`. Urutan slide: Hero → Ayat → Mempelai Pria → Mempelai Wanita → Tanggal → Resepsi → Galeri. Dibungkus gate akses berbasis parameter URL (`impl-guest-gate`). |
 | page-filter-preview | Halaman Film Filter Preview | Halaman preview interaktif 6 preset filter kamera film untuk komponen film roll. Path: `pages/film-filter-preview.html` |
 
 ### Edge Case
@@ -145,14 +183,17 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 | impl-dvh | 100dvh + fallback 100vh | Gunakan `100dvh` (dynamic viewport height) sebagai ukuran viewport yang benar di mobile, dengan fallback `100vh`. |
 | impl-filmroll-bg | Film Roll sebagai BG Alternatif | (Historis) Awalnya film roll loop dipakai menggantikan `<video>` sebagai background bergerak — eliminasi codec issue, autoplay restriction, dan file encoding. Kini dipindah dari background fixed menjadi konten slide Galeri tersendiri (lihat `slide-galeri`). |
 | impl-eager | loading="eager" di Track Bergerak | Ganti `loading="lazy"` dengan `loading="eager"` di dalam strip horizontal agar semua foto preload dari awal, hindari pop-in telat. |
-| impl-touch-pause | Touch Pause/Resume Mobile | `touchstart`/`touchend` untuk pause dan resume animasi di touchscreen — pengganti `:hover` yang tidak berjalan di mobile. |
+| impl-touch-pause | Touch Pause/Resume Mobile | `touchstart`/`touchend` untuk pause dan resume autoplay di touchscreen — pengganti `:hover` yang tidak berjalan di mobile. Sejak `impl-manual-scroll`, pause berupa flag JS yang menghentikan loop `requestAnimationFrame`, bukan lagi toggle class `.is-paused` pada CSS `@keyframes`. |
+| impl-manual-scroll | Scroll Horizontal Manual | Film roll di `slide-galeri` bisa digeser manual: drag mouse (`mousedown`/`mousemove`/`mouseup`), swipe touch, dan scroll wheel — via `overflow-x: auto` native pada `.filmroll`. Autoplay diubah dari CSS `@keyframes` + `transform: translateX` menjadi JS `requestAnimationFrame` yang menggerakkan `scrollLeft` langsung, supaya scroll manual user dan autoplay tidak saling menimpa. Interaksi manual men-pause autoplay sementara (resume otomatis ~0.4 detik setelah interaksi berhenti, supaya animasi tetap terasa jalan terus). |
 | impl-vis-pause | Pause via visibilitychange | Pause animasi film roll saat tab tidak aktif via `document.visibilitychange` untuk hemat baterai dan resource. |
 | impl-film-filter | Film Filter System | Sistem filter kamera film pada film roll: CSS filter per-foto, canvas grain overlay (mix-blend-mode: overlay), vignette radial-gradient per-frame, light leak gradient. Default preset: Portra 400. |
 | impl-typography | Tipografi & Palet Warna Kartu | Header (`h1`/`h2`) pakai Dream Avenue Regular via file lokal `fonts/dream-avenue-regular.otf`, teks kecil pakai Source Serif Pro (Google Fonts). Palet resmi terdokumentasi: header `#5a1919`, teks kecil `#6c4440` opacity 63%; warna aktif saat ini sementara putih menunggu keputusan final. |
 | impl-hero-split | Split-Screen Hero | Teknik split-screen di `slide-hero`: foto absolute-position di belakang, teks di kolom kiri (~46% lebar). Transisi hitam↔foto pakai CSS `mask-image` linear-gradient, bukan garis tegas. Responsive: di layar <700px berubah jadi stack vertikal (foto di atas, fade ke bawah, teks di bawahnya). |
-| impl-couple-cards | Dua Kartu Mempelai | Dua kartu berdampingan di `slide-akad` (CSS grid 2 kolom): kartu mempelai pria (M. Rizky Adi Prasetyo, putra dari (Alm.) Bapak Suharto & (Almh.) Ibu Lastri) dan kartu mempelai wanita (Divetri Ayu Rahmawati, putri dari Bapak Slamet Riyadi & (Almh.) Ibu Ning). Responsive: stack 1 kolom di layar <700px. |
-| impl-akad-responsive-bg | Background Akad Responsive | Background `slide-akad` beda per breakpoint: foto portrait `photos/1.JPG` (667×1000) untuk mobile, foto landscape `photos/1desktop.JPG` (667×451) untuk desktop, di-switch via `@media (min-width: 701px)`. |
+| impl-mempelai-split | Split Slide Mempelai | `slide-mempelai-pria` dan `slide-mempelai-wanita` masing-masing slide penuh dengan foto full-bleed sendiri (`photos/12.jpeg`, `photos/11.jpeg`) dan overlay gelap di mobile. Desktop (≥701px): layout dua panel berdampingan — foto 50% lebar + kartu info 50%, dengan gradient fade di tepi foto ke warna latar `#B8B09B` (bukan overlay hitam solid). Menggantikan pendekatan grid 2-kolom dalam satu slide. |
 | impl-compress-script | Skrip Kompresi Gambar | `scripts/compress-image.py` — skrip Python (Pillow) untuk kompres gambar koleksi film-roll: resize ke lebar target (default 667px) dan re-encode JPEG kualitas 82. Dipakai untuk `photos/6.JPG` (10.73MB → 76KB, 667×1000). |
+| impl-save-gcal | Simpan Tanggal ke Google Calendar | Klik `#saveDateBtn` membuka tab baru ke `calendar.google.com/calendar/render` dengan query `action=TEMPLATE`, `text`, `dates` (UTC, dikonversi dari 29 Agustus 2026 11.00–14.00 WIB), `location`, `details` — event otomatis terisi tanpa perlu backend/OAuth. Menggantikan pendekatan lama (download `.ics` via Blob). |
+| impl-guest-gate | Gate Akses via Parameter URL | `?p=<kode>` dicocokkan ke `GUEST_MAP` (object kode → nama tamu) di JS. Kode tidak valid/kosong → `<html>` dapat class `gate-blocked`, menampilkan overlay gate penuh ("Mohon doa dan restu atas pernikahan kami") menutupi konten. Kode valid → nama tamu disuntik ke `.slide-hero .guest-name`, menggantikan placeholder "Siapa kamu?". Tanpa backend — daftar tamu hardcoded di JS. |
+| impl-countdown | Countdown Pernikahan | Hitung mundur real-time (hari/jam/menit/detik) di `slide-tanggal` (`#cd-days`, `#cd-hours`, `#cd-mins`, `#cd-secs`) menuju `2026-08-29T08:00:00+07:00`, di-update tiap detik via `setInterval`. |
 
 ### Teknologi / API
 | ID | Label | Deskripsi |
@@ -236,13 +277,19 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 - `page-filmroll-demo` → `slide-galeri`
 - `slide-galeri` → `film-roll`
 - `page-filmroll-demo` → `slide-hero`
+- `page-filmroll-demo` → `slide-ayat`
 - `slide-hero` → `impl-hero-split`
 - `impl-hero-split` → `tech-maskimage`
 - `impl-typography` → `tech-fontface`
-- `page-filmroll-demo` → `slide-akad`
-- `slide-akad` → `ec-filesize`
-- `slide-akad` → `impl-couple-cards`
-- `slide-akad` → `impl-akad-responsive-bg`
+- `page-filmroll-demo` → `slide-mempelai-pria`
+- `page-filmroll-demo` → `slide-mempelai-wanita`
+- `slide-mempelai-pria` → `impl-mempelai-split`
+- `slide-mempelai-wanita` → `impl-mempelai-split`
+- `page-filmroll-demo` → `slide-tanggal`
+- `slide-tanggal` → `impl-save-gcal`
+- `slide-tanggal` → `impl-countdown`
+- `page-filmroll-demo` → `slide-resepsi`
+- `page-filmroll-demo` → `impl-guest-gate`
 
 ### Film Roll Loop → Implementasi Baru
 - `film-roll` → `impl-film-filter`
@@ -250,6 +297,7 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 - `film-roll` → `impl-eager`
 - `film-roll` → `impl-touch-pause`
 - `film-roll` → `impl-vis-pause`
+- `film-roll` → `impl-manual-scroll`
 
 ### Implementasi Baru → Edge Case & Teknologi
 - `ec-lazy` → `impl-eager`

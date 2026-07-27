@@ -125,11 +125,11 @@ canvas { display: block; }
 <div id="hdr">
   <h1>Undangan Online — Knowledge Graph</h1>
   <p>docs/requirements.md · docs/filmrollloop-requirements.md</p>
-  <span class="version">v1.11 · 2026-07-23</span>
+  <span class="version">v2.1 · 2026-07-27</span>
 </div>
 
 <div id="stats">
-  55 nodes · 71 edges
+  62 nodes · 78 edges
 </div>
 
 <canvas id="g"></canvas>
@@ -175,7 +175,10 @@ const nodes = [
   { id: 'slide-scroll',  label: 'Konten Slide',             type: 'component', r: 14, desc: 'Konten isi halaman bergeser seperti slide presentasi saat user melakukan scroll.' },
   { id: 'slide-galeri',  label: 'Slide Galeri',             type: 'component', r: 14, desc: 'Slide terakhir di page-filmroll-demo yang menampilkan film-roll-loop sebagai konten (bukan lagi background fixed).' },
   { id: 'slide-hero',    label: 'Slide Hero (Cover)',       type: 'component', r: 14, desc: 'Slide pertama di page-filmroll-demo — layout split-screen: foto full-bleed di kanan, teks undangan di area hitam kiri. Judul pasangan pakai gambar SVG (assets/tittle_adidivetri.svg), bukan teks h1. Responsive: stack vertikal di mobile.' },
-  { id: 'slide-akad',    label: 'Slide Akad Nikah',         type: 'component', r: 14, desc: 'Slide kedua di page-filmroll-demo — background foto full-bleed (photos/1.JPG) dengan overlay gelap. Isi: dua kartu mempelai berdampingan (pria & wanita) di atas kartu info waktu & tempat akad.' },
+  { id: 'slide-ayat',    label: 'Slide Ayat Ar-Rum',        type: 'component', r: 14, desc: 'Slide kedua di page-filmroll-demo — kartu berlatar polos gelap berisi judul surah "Surah Ar-Rum", label "Ar-Rum · Ayat 21", dan lafaz Basmalah dalam huruf Arab.' },
+  { id: 'slide-mempelai-pria',   label: 'Slide Mempelai Pria',   type: 'component', r: 14, desc: 'Slide ketiga di page-filmroll-demo — foto full-bleed photos/12.jpeg, kartu nama mempelai pria (M. Rizky Adi Prasetyo) + nama orang tua.' },
+  { id: 'slide-mempelai-wanita', label: 'Slide Mempelai Wanita', type: 'component', r: 14, desc: 'Slide ketiga di page-filmroll-demo — foto full-bleed photos/11.jpeg, kartu nama mempelai wanita (Divetri Ayu Rahmawati) + nama orang tua.' },
+  { id: 'slide-resepsi', label: 'Slide Resepsi', type: 'component', r: 14, desc: 'Slide kelima di page-filmroll-demo — foto full-bleed photos/6.JPG dengan overlay gelap, info waktu (11.00-14.00 WIB) dan lokasi (Grand Ballroom Hotel Mulia, Jakarta).' },
   { id: 'ec-autoplay',   label: 'Autoplay Restriction',    type: 'edgecase',  r: 11, desc: 'iOS/Android butuh atribut muted + playsinline agar autoplay berjalan tanpa interaksi user. Tanpa itu video stuck di frame pertama.' },
   { id: 'ec-ios-fixed',  label: 'iOS Fixed Bug',           type: 'edgecase',  r: 11, desc: 'Bug Safari lama: video fixed "lepas" saat scroll momentum (rubber-band). Fix: transform: translateZ(0) atau position: sticky pada parent.' },
   { id: 'ec-viewport',   label: 'Viewport Height',         type: 'edgecase',  r: 11, desc: 'Mobile browser me-resize viewport saat scroll (address bar collapse/expand). Gunakan 100dvh sebagai ganti 100vh.' },
@@ -210,20 +213,24 @@ const nodes = [
   { id: 'tech-savedata', label: 'navigator.connection',    type: 'tech',      r: 10, desc: 'navigator.connection.saveData dan effectiveType untuk deteksi mode hemat data dan kecepatan koneksi user.' },
   { id: 'tech-snap',     label: 'scroll-snap: proximity',  type: 'tech',      r: 10, desc: 'CSS scroll-snap-type: proximity lebih smooth dan tidak kaku dibanding mandatory, terutama di iOS Safari.' },
   { id: 'tech-objfit',   label: 'object-fit: cover',       type: 'tech',      r: 10, desc: 'CSS property untuk mengisi kontainer gambar secara penuh — akan memotong bagian gambar jika rasio tidak sesuai.' },
-  { id: 'page-filmroll-demo',   label: 'Halaman Film Roll BG',      type: 'page', r: 15, desc: 'Halaman utama undangan (entry point proyek), path index.html. Slide Undangan/Akad/Resepsi berlatar polos gelap; film roll loop kini jadi konten di slide terakhir "Galeri", bukan lagi background fixed di seluruh halaman.' },
+  { id: 'page-filmroll-demo',   label: 'Halaman Film Roll BG',      type: 'page', r: 15, desc: 'Halaman utama undangan (entry point proyek), path index.html. Urutan slide: Hero -> Mempelai Pria -> Mempelai Wanita -> Tanggal -> Resepsi -> Galeri. Dibungkus gate akses berbasis parameter URL.' },
   { id: 'page-filter-preview',  label: 'Film Filter Preview',        type: 'page', r: 15, desc: 'Halaman preview interaktif 6 preset filter kamera film untuk komponen film roll. Path: pages/film-filter-preview.html' },
   { id: 'impl-filmroll-bg',   label: 'Film Roll sebagai BG',   type: 'impl', r: 12, desc: '(Historis) Awalnya film roll loop dipakai menggantikan <video> sebagai background bergerak. Kini dipindah dari background fixed menjadi konten slide Galeri tersendiri (lihat slide-galeri).' },
   { id: 'impl-eager',         label: 'loading="eager"',         type: 'impl', r: 12, desc: 'Ganti loading="lazy" dengan loading="eager" di dalam strip horizontal agar semua foto preload dari awal, hindari pop-in telat. Solusi: ec-lazy.' },
-  { id: 'impl-touch-pause',   label: 'Touch Pause Mobile',     type: 'impl', r: 12, desc: 'touchstart/touchend untuk pause dan resume animasi di touchscreen — pengganti :hover yang tidak berjalan di mobile. Solusi: ec-hovermob.' },
+  { id: 'impl-touch-pause',   label: 'Touch Pause Mobile',     type: 'impl', r: 12, desc: 'touchstart/touchend untuk pause dan resume autoplay di touchscreen — pengganti :hover yang tidak berjalan di mobile. Sejak impl-manual-scroll, pause berupa flag JS yang menghentikan requestAnimationFrame, bukan toggle class CSS. Solusi: ec-hovermob.' },
   { id: 'impl-vis-pause',     label: 'Pause visibilitychange', type: 'impl', r: 12, desc: 'Pause animasi film roll saat tab tidak aktif via document.visibilitychange untuk hemat baterai dan resource. Solusi: ec-battery.' },
+  { id: 'impl-manual-scroll', label: 'Scroll Horizontal Manual', type: 'impl', r: 12, desc: 'Film roll bisa digeser manual: drag mouse, swipe touch, scroll wheel — via overflow-x:auto native. Autoplay diubah dari CSS @keyframes ke JS requestAnimationFrame yang menggerakkan scrollLeft, agar tidak bentrok dengan scroll manual user.' },
   { id: 'impl-film-filter',   label: 'Film Filter System',     type: 'impl', r: 12, desc: 'Sistem filter kamera film pada film roll: CSS filter per-foto, canvas grain overlay (mix-blend-mode: overlay), vignette radial-gradient per-frame, light leak gradient. Default preset: Portra 400.' },
   { id: 'impl-typography',    label: 'Tipografi & Palet Warna', type: 'impl', r: 12, desc: 'Header pakai Dream Avenue Regular (file lokal fonts/dream-avenue-regular.otf), teks kecil pakai Source Serif Pro. Palet resmi terdokumentasi: header #5a1919, teks kecil #6c4440 opacity 63%; warna aktif saat ini sementara putih.' },
   { id: 'tech-fontface',      label: '@font-face lokal',        type: 'tech', r: 10, desc: 'CSS @font-face untuk load file font custom (.otf/.woff) dari folder fonts/ lokal — alternatif CDN pihak ketiga yang bisa gagal load.' },
   { id: 'impl-hero-split',    label: 'Split-Screen Hero',      type: 'impl', r: 12, desc: 'Teknik split-screen di slide-hero: foto absolute-position di belakang, teks di kolom kiri (~46% lebar). Transisi hitam-foto pakai CSS mask-image linear-gradient. Responsive: <700px jadi stack vertikal.' },
-  { id: 'impl-couple-cards',  label: 'Dua Kartu Mempelai',     type: 'impl', r: 12, desc: 'Dua kartu berdampingan di slide-akad (CSS grid 2 kolom): kartu mempelai pria (M. Rizky Adi Prasetyo) dan kartu mempelai wanita (Divetri Ayu Rahmawati), masing-masing dengan nama orang tua. Responsive: stack 1 kolom di <700px.' },
-  { id: 'impl-akad-responsive-bg', label: 'Background Akad Responsive', type: 'impl', r: 12, desc: 'Background slide-akad beda per breakpoint: foto portrait photos/1.JPG (667x1000) untuk mobile, foto landscape photos/1desktop.JPG (667x451) untuk desktop, di-switch via @media (min-width: 701px).' },
+  { id: 'impl-mempelai-split', label: 'Split Slide Mempelai',  type: 'impl', r: 12, desc: 'slide-mempelai-pria dan slide-mempelai-wanita masing-masing slide penuh dengan foto full-bleed sendiri dan overlay gelap di mobile. Desktop (>=701px): dua panel berdampingan, foto 50% + kartu info 50%, gradient fade tepi foto ke warna latar #B8B09B.' },
   { id: 'tech-maskimage',     label: 'mask-image gradient',    type: 'tech', r: 10, desc: 'CSS mask-image/-webkit-mask-image dengan linear-gradient untuk fade transparansi elemen secara halus — dipakai untuk blend foto hero ke background hitam tanpa garis tegas.' },
   { id: 'impl-compress-script', label: 'Skrip Kompresi Gambar', type: 'impl', r: 12, desc: 'scripts/compress-image.py — skrip Python (Pillow) untuk kompres gambar koleksi film-roll: resize ke lebar target (default 667px) dan re-encode JPEG kualitas 82. Dipakai untuk photos/6.JPG (10.73MB -> 76KB, 667x1000).' },
+  { id: 'slide-tanggal', label: 'Slide Simpan Tanggal', type: 'component', r: 14, desc: 'Slide berisi tombol pill "Simpan Tanggal" (#saveDateBtn) dengan sparkle berulang saat slide terlihat di viewport. Klik tombol membuka Google Calendar dengan event terisi otomatis.' },
+  { id: 'impl-save-gcal', label: 'Simpan Tanggal ke Google Calendar', type: 'impl', r: 12, desc: 'Klik #saveDateBtn membuka tab baru ke calendar.google.com/calendar/render dengan query action=TEMPLATE, text, dates (UTC, dari 29 Agustus 2026 11.00-14.00 WIB), location, details — event otomatis terisi tanpa backend/OAuth. Menggantikan pendekatan lama (download .ics via Blob).' },
+  { id: 'impl-guest-gate', label: 'Gate Akses via URL', type: 'impl', r: 12, desc: '?p=<kode> dicocokkan ke GUEST_MAP (kode -> nama tamu) di JS. Kode invalid -> <html> dapat class gate-blocked, overlay gate penuh menutupi konten. Kode valid -> nama tamu disuntik ke .slide-hero .guest-name. Tanpa backend, daftar tamu hardcoded.' },
+  { id: 'impl-countdown', label: 'Countdown Pernikahan', type: 'impl', r: 12, desc: 'Hitung mundur real-time (hari/jam/menit/detik) di slide-tanggal menuju 2026-08-29T08:00:00+07:00, update tiap detik via setInterval.' },
 ];
 
 const edges = [
@@ -255,16 +262,21 @@ const edges = [
   ['page-filmroll-demo','slide-galeri'],
   ['slide-galeri','film-roll'],
   ['page-filmroll-demo','slide-hero'],
+  ['page-filmroll-demo','slide-ayat'],
   ['slide-hero','impl-hero-split'],
   ['impl-hero-split','tech-maskimage'],
-  ['page-filmroll-demo','slide-akad'],
-  ['slide-akad','ec-filesize'],
-  ['slide-akad','impl-couple-cards'],
-  ['slide-akad','impl-akad-responsive-bg'],
+  ['page-filmroll-demo','slide-mempelai-pria'],
+  ['page-filmroll-demo','slide-mempelai-wanita'],
+  ['slide-mempelai-pria','impl-mempelai-split'],
+  ['slide-mempelai-wanita','impl-mempelai-split'],
+  ['page-filmroll-demo','slide-resepsi'],
+  ['page-filmroll-demo','impl-guest-gate'],
+  ['slide-tanggal','impl-countdown'],
   ['film-roll','impl-filmroll-bg'],
   ['film-roll','impl-eager'],
   ['film-roll','impl-touch-pause'],
   ['film-roll','impl-vis-pause'],
+  ['film-roll','impl-manual-scroll'],
   ['ec-lazy','impl-eager'],
   ['ec-hovermob','impl-touch-pause'],
   ['ec-battery','impl-vis-pause'],
@@ -276,6 +288,8 @@ const edges = [
   ['impl-typography','tech-fontface'],
   ['ec-filesize','impl-compress-script'],
   ['film-roll','impl-compress-script'],
+  ['page-filmroll-demo','slide-tanggal'],
+  ['slide-tanggal','impl-save-gcal'],
 ];
 
 const nodeMap = {};

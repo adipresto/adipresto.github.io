@@ -6,7 +6,7 @@
 <title>Undangan — Film Roll Background</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   @font-face {
     font-family: 'Dream Avenue';
@@ -50,9 +50,9 @@
     display: none;
   }
 
-  /* lubang sprocket atas & bawah */
-  .filmroll::before,
-  .filmroll::after {
+  /* lubang sprocket atas & bawah — di wrapper (bukan .filmroll) supaya diam saat digeser */
+  .slide-galeri-inner::before,
+  .slide-galeri-inner::after {
     content: "";
     position: absolute;
     left: 0; right: 0;
@@ -64,9 +64,10 @@
     );
     background-size: 20px 100%;
     z-index: 2;
+    pointer-events: none;
   }
-  .filmroll::before { top: 0; }
-  .filmroll::after  { bottom: 0; }
+  .slide-galeri-inner::before { top: 0; }
+  .slide-galeri-inner::after  { bottom: 0; }
 
   .filmroll-track {
     display: flex;
@@ -132,6 +133,45 @@
     color: #B8B09B;
     opacity: 0.7;
     pointer-events: none;
+  }
+
+  /* ─── Tombol navigasi < > untuk filmroll ────────────────────────────── */
+  .galeri-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 4;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(13, 13, 13, 0.55);
+    color: #B8B09B;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(2px);
+  }
+  .galeri-nav:active { background: rgba(13, 13, 13, 0.8); }
+  .galeri-nav.prev { left: 8px; }
+  .galeri-nav.next { right: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .galeri-nav { display: none; }
+  }
+
+  /* ─── Mobile: swipe berhenti pas foto di tengah frame ───────────────── */
+  @media (max-width: 768px) {
+    .filmroll {
+      scroll-snap-type: x mandatory;
+    }
+    .frame {
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+    }
   }
 
   /* ─── prefers-reduced-motion: matikan autoplay, sisakan scroll manual ───────────────────── */
@@ -414,10 +454,7 @@
 
   .mempelai-pria-photo::after,
   .mempelai-wanita-photo::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    content: none;
   }
 
   .slide-mempelai-pria .card,
@@ -520,7 +557,92 @@
     }
   }
 
-  /* ─── Slide Tanggal Pernikahan: foto full-bleed + kartu tanggal besar & countdown ──── */
+  /* ─── Slide Ayat: kartu penuh satu halaman, transparan, background floral ──── */
+  .slide-ayat {
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .ayat-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('assets/slide2.svg') center/cover no-repeat;
+  }
+
+  .ayat-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+  }
+
+  .slide-ayat .card {
+    position: relative;
+    z-index: 1;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    border-radius: 0;
+    max-width: 640px;
+    width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (min-width: 701px) {
+    .slide-ayat .card {
+      max-width: 780px;
+      padding: 2rem 3rem;
+    }
+  }
+
+  /* clamp(): skala mengikuti lebar viewport, tetap kebaca di mobile & membesar wajar di desktop, dibatasi biar tidak overflow */
+  /* prefix .card butuh biar menang atas .card p (specificity 0,1,1) */
+  .card .ayat-surah-title {
+    font-family: 'Amiri', 'Traditional Arabic', 'Scheherazade New', serif;
+    font-size: clamp(3rem, calc(4vw + 1.5rem), 4.25rem);
+    line-height: 1.4;
+    color: #ffffff;
+    margin: 0 0 0.75rem;
+  }
+
+  .card .ayat-bismillah {
+    font-family: 'Amiri', 'Traditional Arabic', 'Scheherazade New', serif;
+    font-size: clamp(2.2rem, calc(2.5vw + 1.2rem), 2.75rem);
+    line-height: 1.8;
+    color: #ffffff;
+    margin-top: 1.5rem;
+    direction: rtl;
+  }
+
+  .card .ayat-verse {
+    font-family: 'Amiri', 'Traditional Arabic', 'Scheherazade New', serif;
+    font-size: clamp(1.85rem, calc(1.8vw + 1rem), 2.25rem);
+    line-height: 1.9;
+    color: #ffffff;
+    margin-top: 1.25rem;
+    direction: rtl;
+  }
+
+  .card .ayat-translation {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(0.9rem, calc(0.4rem + 1vw), 1.05rem);
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 1.25rem;
+    max-width: 520px;
+    direction: ltr;
+  }
+
   .slide-tanggal {
     position: relative;
     overflow: hidden;
@@ -543,35 +665,44 @@
   .slide-tanggal .card {
     position: relative;
     z-index: 1;
+    background: rgba(13, 13, 13, 0.2);
+    border-color: rgba(255, 255, 255, 0.14);
   }
 
-  /* label "Simpan Tanggal" bergaya tombol pill beneran (klik = simpan ke kalender), sparkle berulang selama slide terlihat */
-  .slide-tanggal .label {
+  /* tombol pill "Simpan Tanggal" — CTA terpisah dari .label (title), diletakkan di bawah countdown */
+  .slide-tanggal .save-date-btn {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 2rem;
     padding: 0.6rem 1.5rem;
     border: 1px solid rgba(255, 152, 0, 0.6);
     border-radius: 999px;
     background: rgba(255, 152, 0, 0.08);
+    color: rgba(184, 176, 155, 0.9);
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
     opacity: 0;
     transform: scale(0.75) translateY(10px);
-    /* reset tampilan default <button> — tipografi (font/uppercase/letter-spacing) tetap ikut aturan .card .label di atas */
     cursor: pointer;
     -webkit-appearance: none;
     appearance: none;
     transition: background 0.2s ease;
   }
 
-  .slide-tanggal .label:hover,
-  .slide-tanggal .label:focus-visible {
+  .slide-tanggal .save-date-btn:hover,
+  .slide-tanggal .save-date-btn:focus-visible {
     background: rgba(255, 152, 0, 0.18);
   }
 
-  .slide-tanggal .label:active {
+  .slide-tanggal .save-date-btn:active {
     background: rgba(255, 152, 0, 0.28);
   }
 
-  .slide-tanggal.in-view .label {
+  .slide-tanggal.in-view .save-date-btn {
     animation: labelPopIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
 
@@ -605,11 +736,11 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .slide-tanggal .label {
+    .slide-tanggal .save-date-btn {
       opacity: 1;
       transform: none;
     }
-    .slide-tanggal.in-view .label {
+    .slide-tanggal.in-view .save-date-btn {
       animation: none;
     }
     .slide-tanggal .sparkle,
@@ -618,21 +749,88 @@
     }
   }
 
-  .date-big {
-    font-family: 'Dream Avenue', Georgia, serif;
-    font-weight: 400;
-    font-size: clamp(2.4rem, 9vw, 4rem);
-    color: #B8B09B;
-    line-height: 1;
-    margin: 0.5rem 0 1.5rem;
-    letter-spacing: 0.02em;
+  /* ─── 1. Potongan kalender: bulan Agustus 2026, tanggal 29 disorot, sekitarnya diburamkan ──── */
+  .cal-month {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(184, 176, 155, 0.63);
+    margin-bottom: 0.9rem;
   }
 
-  .date-big .date-sep {
+  .cal-strip {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(0.5rem, 2.5vw, 1rem);
+    margin-bottom: 1.75rem;
+  }
+
+  .cal-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    filter: blur(2px);
+    transition: filter 0.2s ease, opacity 0.2s ease;
+  }
+
+  .cal-dayname {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(184, 176, 155, 0.5);
+  }
+
+  .cal-day {
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+    color: rgba(184, 176, 155, 0.4);
+    line-height: 1;
+  }
+
+  .cal-cell.cal-cell--active {
+    filter: none;
+  }
+
+  .cal-cell--active .cal-dayname {
+    color: rgba(184, 176, 155, 0.8);
+  }
+
+  .cal-cell--active .cal-day {
+    font-size: clamp(2.4rem, 9vw, 4rem);
     color: #B8B09B;
-    margin: 0 0.15em;
-    font-size: 0.7em;
-    vertical-align: middle;
+    padding: 0 0.1em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cal-cell { filter: none; opacity: 0.4; }
+    .cal-cell--active { opacity: 1; }
+  }
+
+  /* ─── 2 & 3. Jam akad & resepsi ──────────────────────────────────────── */
+  .event-times {
+    display: flex;
+    justify-content: center;
+    gap: clamp(1.5rem, 6vw, 3rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .event-time .event-label {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(184, 176, 155, 0.63);
+    margin-bottom: 0.4rem;
+  }
+
+  .event-time .event-hour {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: clamp(0.9rem, 3vw, 1.05rem);
+    color: #B8B09B;
   }
 
   .countdown {
@@ -674,19 +872,82 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: url('components/film-roll-loop/photos/6.JPG') center/cover no-repeat;
+    background: url('components/film-roll-loop/photos/8.JPEG') center/cover no-repeat;
   }
 
   .resepsi-photo::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    content: none;
   }
 
+  /* foto resepsi (8.JPEG) cerah & tanpa overlay gelap — kartu dibuat lebih pekat & gelap sendiri
+     supaya teks di atasnya tetap terbaca, alih-alih pakai kaca transparan tipis seperti kartu lain */
   .slide-resepsi .card {
     position: relative;
     z-index: 1;
+    background: rgba(13, 13, 13, 0.6);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+
+  .slide-resepsi .card h2,
+  .slide-resepsi .card .guest-name {
+    color: #ffffff;
+  }
+
+  .slide-resepsi .card .label,
+  .slide-resepsi .card p,
+  .slide-resepsi .card .date,
+  .slide-resepsi .card .venue {
+    color: rgba(255, 255, 255, 0.63);
+  }
+
+  /* ─── QR placeholder lokasi maps (dipakai ulang untuk akad & resepsi) ──── */
+  .qr-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: clamp(1.5rem, 6vw, 3rem);
+    margin-top: 1.75rem;
+  }
+
+  .qr-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .qr-placeholder {
+    width: 92px;
+    height: 92px;
+    border: 1px dashed rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.4;
+  }
+
+  .qr-label {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.63);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .qr-venue {
+    display: block;
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-size: 0.85rem;
+    color: #ffffff;
+    margin-top: 0.15rem;
   }
 
   /* ─── Slide Galeri: film roll sebagai konten, bukan lagi background ──── */
@@ -706,6 +967,7 @@
 
   .slide-galeri-inner {
     width: 100%;
+    position: relative;
   }
 
   .scroll-hint {
@@ -714,6 +976,7 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 20;
+    pointer-events: none;
     color: rgba(184,176,155,0.4);
     font-family: monospace;
     font-size: 0.75rem;
@@ -730,6 +993,63 @@
   @media (prefers-reduced-motion: reduce) {
     .scroll-hint { animation: none; }
   }
+
+  /* ─── Dot nav vertikal: tap/klik buat pindah slide ──────────────────── */
+  .slide-nav {
+    position: fixed;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .slide-nav button {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .slide-nav button::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(184, 176, 155, 0.35);
+    border: 1px solid rgba(184, 176, 155, 0.5);
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+
+  .slide-nav button.is-active::before {
+    background: #B8B09B;
+    transform: scale(1.3);
+  }
+
+  html.gate-blocked .slide-nav {
+    display: none;
+  }
+
+  @media (max-width: 480px) {
+    .slide-nav { right: 8px; gap: 11px; }
+  }
+
+  /* ─── Trap area tap: 1/3 atas = slide sebelumnya, 1/3 bawah = slide berikutnya ───
+     Tidak dibuat elemen overlay fisik (biar tidak menutupi tombol galeri/save-date/dot-nav
+     yang letaknya juga di area atas-bawah) — cukup ditandai lewat CSS var untuk dipakai JS,
+     klik ditangani via event delegation di .content-layer. */
+  .content-layer {
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -737,7 +1057,7 @@
 <!-- ─── Content slides ───────────────────────────────────────────────────── -->
 <main class="content-layer">
 
-  <section class="slide slide-hero">
+  <section class="slide slide-hero" id="slide-0">
     <div class="hero-photo" aria-hidden="true"></div>
     <div class="hero-content">
       <div class="hero-card">
@@ -748,16 +1068,28 @@
         <div class="hero-third hero-middle card card--plain">
           <div class="divider"></div>
           <p>kepada yang terhormat</p>
-          <h3 class="guest-name">Siapa kamu?</h3>
+          <h3 class="guest-name">"NAMA"</h3>
           
-          <!-- <p>Dengan penuh sukacita, kami mengundang Anda untuk hadir merayakan hari istimewa kami.</p> -->
+          <p style="font-size:12px">Mohon maaf apabila terjadi kesalah dalam penulisan nama.</p>
         </div>
         <div class="hero-third hero-bottom" aria-hidden="true"></div>
       </div>
     </div>
   </section>
 
-  <section class="slide slide-mempelai-pria">
+  <section class="slide slide-ayat" id="slide-ayat">
+    <div class="ayat-photo" aria-hidden="true"></div>
+    <div class="card">
+      <p class="ayat-surah-title">سُورَةُ الرُّومِ</p>
+      <p class="label">Ar-Rum &middot; Ayat 21</p>
+      <div class="divider"></div>
+      <p class="ayat-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+      <p class="ayat-verse">وَمِنْ اٰيٰتِهٖٓ اَنْ خَلَقَ لَكُمْ مِّنْ اَنْفُسِكُمْ اَزْوَاجًا لِّتَسْكُنُوْٓا اِلَيْهَا وَجَعَلَ بَيْنَكُمْ مَّوَدَّةً وَّرَحْمَةًۗ اِنَّ فِيْ ذٰلِكَ لَاٰيٰتٍ لِّقَوْمٍ يَّتَفَكَّرُوْنَ</p>
+      <p class="ayat-translation">&ldquo;Di antara tanda-tanda (kebesaran)-Nya ialah bahwa Dia menciptakan pasangan-pasangan untukmu dari (jenis) dirimu sendiri agar kamu merasa tenteram kepadanya. Dia menjadikan di antaramu rasa cinta dan kasih sayang. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir.&rdquo;</p>
+    </div>
+  </section>
+
+  <section class="slide slide-mempelai-pria" id="slide-1">
     <div class="mempelai-pria-photo" aria-hidden="true"></div>
     <div class="slide-spacer" aria-hidden="true"></div>
     <div class="card-bottom">
@@ -770,11 +1102,12 @@
     </div>
   </section>
 
-  <section class="slide slide-mempelai-wanita">
+  <section class="slide slide-mempelai-wanita" id="slide-2">
     <div class="mempelai-wanita-photo" aria-hidden="true"></div>
     <div class="slide-spacer" aria-hidden="true"></div>
     <div class="card-bottom">
       <div class="card">
+
         <p class="label">Mempelai Wanita</p>
         <h3 class="guest-name">Divetri Ayu Rahmawati</h3>
         <div class="divider"></div>
@@ -783,11 +1116,20 @@
     </div>
   </section>
 
-  <section class="slide slide-tanggal">
+  <section class="slide slide-tanggal" id="slide-3">
     <div class="tanggal-photo" aria-hidden="true"></div>
     <div class="card">
-      <button type="button" class="label" id="saveDateBtn"><span class="sparkle spk1" aria-hidden="true">✦</span>Simpan Tanggal<span class="sparkle spk2" aria-hidden="true">✦</span><span class="sparkle spk3" aria-hidden="true">✦</span></button>
-      <div class="date-big">29<span class="date-sep">·</span>08<span class="date-sep">·</span>2026</div>
+      <p class="label">Catat dan simpan tanggal</p>
+
+      <div class="cal-month">Agustus 2026</div>
+      <div class="cal-strip" id="calStrip" aria-hidden="true">
+        <div class="cal-cell" data-target-day="27" data-target-name="Kamis"><span class="cal-dayname">Kamis</span><span class="cal-day">27</span></div>
+        <div class="cal-cell" data-target-day="28" data-target-name="Jumat"><span class="cal-dayname">Jumat</span><span class="cal-day">28</span></div>
+        <div class="cal-cell cal-cell--active" data-target-day="29" data-target-name="Sabtu"><span class="cal-dayname">Sabtu</span><span class="cal-day">29</span></div>
+        <div class="cal-cell" data-target-day="30" data-target-name="Minggu"><span class="cal-dayname">Minggu</span><span class="cal-day">30</span></div>
+        <div class="cal-cell" data-target-day="31" data-target-name="Senin"><span class="cal-dayname">Senin</span><span class="cal-day">31</span></div>
+      </div>
+
       <div class="divider"></div>
       <div class="countdown" id="countdown">
         <div class="cd-item"><span class="cd-num" id="cd-days">00</span><span class="cd-label">Hari</span></div>
@@ -795,29 +1137,54 @@
         <div class="cd-item"><span class="cd-num" id="cd-mins">00</span><span class="cd-label">Menit</span></div>
         <div class="cd-item"><span class="cd-num" id="cd-secs">00</span><span class="cd-label">Detik</span></div>
       </div>
+      <button type="button" class="save-date-btn" id="saveDateBtn"><span class="sparkle spk1" aria-hidden="true">✦</span>Simpan Tanggal<span class="sparkle spk2" aria-hidden="true">✦</span><span class="sparkle spk3" aria-hidden="true">✦</span></button>
     </div>
   </section>
 
-  <section class="slide slide-resepsi">
+  <section class="slide slide-resepsi" id="slide-4">
     <div class="resepsi-photo" aria-hidden="true"></div>
     <div class="card">
-      <p class="label">Resepsi</p>
+      <p class="label">Akad Nikah &amp; Resepsi</p>
       <h2>Selamat Datang</h2>
       <div class="divider"></div>
       <p>Kehadiran dan doa restu Anda adalah hadiah terbesar bagi kami.</p>
-      <p class="date">Pukul 11.00 – 14.00 WIB</p>
-      <p class="venue">Grand Ballroom Hotel Mulia<br>Jl. Asia Afrika, Jakarta</p>
+
+      <div class="event-times">
+        <div class="event-time">
+          <p class="event-label">Akad Nikah</p>
+          <p class="event-hour">08.00 – 09.00 WIB</p>
+          <p class="venue">Kantor KUA Welahan</p>
+        </div>
+        <div class="event-time">
+          <p class="event-label">Resepsi</p>
+          <p class="event-hour">13.00 – 21.00 WIB</p>
+          <p class="venue">Kediaman Mempelai Wanita</p>
+        </div>
+      </div>
+
+      <div class="qr-row">
+        <div class="qr-item">
+          <div class="qr-placeholder" aria-hidden="true">QR<br>Maps</div>
+          <p class="qr-label">Lokasi Akad<br><span class="qr-venue">MUA Welahan</span></p>
+        </div>
+        <div class="qr-item">
+          <div class="qr-placeholder" aria-hidden="true">QR<br>Maps</div>
+          <p class="qr-label">Lokasi Resepsi<br><span class="qr-venue">Kediaman Mempelai Wanita</span></p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="slide slide-galeri">
+  <section class="slide slide-galeri" id="slide-5">
     <p class="label">Galeri</p>
     <div class="slide-galeri-inner">
       <div class="filmroll">
         <div class="filmroll-track" id="track"></div>
-        <div class="filmroll-grain" id="grain"></div>
-        <div class="filmroll-leak"></div>
       </div>
+      <div class="filmroll-grain" id="grain"></div>
+      <div class="filmroll-leak"></div>
+      <button type="button" class="galeri-nav prev" id="galeriPrev" aria-label="Foto sebelumnya">&#8249;</button>
+      <button type="button" class="galeri-nav next" id="galeriNext" aria-label="Foto berikutnya">&#8250;</button>
     </div>
   </section>
 
@@ -825,6 +1192,9 @@
 
 <!-- scroll hint -->
 <div class="scroll-hint" id="scrollHint">scroll ↓</div>
+
+<!-- dot nav: tap/klik buat lompat ke slide tertentu -->
+<nav class="slide-nav" id="slideNav" aria-label="Navigasi slide"></nav>
 
 <!-- gate: tampil satu-satunya kalau ?p tidak valid -->
 <div class="gate-page" id="gatePage">
@@ -907,6 +1277,44 @@
     document.getElementById("grain").style.backgroundImage = "url(" + c.toDataURL() + ")";
   })();
 
+  const frameStep = () => {
+    const f = track.querySelector(".frame");
+    return f ? f.getBoundingClientRect().width + 12 : 176; // lebar frame + margin kiri-kanan
+  };
+
+  const SWIPE_THRESHOLD = 12; // px — geser sedikit saja sudah cukup untuk pindah satu frame
+
+  // geser sedikit dari posisi awal (startScroll) langsung "commit" ke frame berikutnya/sebelumnya
+  function snapAfterDrag(startScroll, delta) {
+    const step = frameStep();
+    const startIndex = Math.round(startScroll / step);
+    let targetIndex = startIndex;
+    if (delta > SWIPE_THRESHOLD) targetIndex = startIndex + 1;
+    else if (delta < -SWIPE_THRESHOLD) targetIndex = startIndex - 1;
+    filmroll.scrollTo({ left: Math.max(0, targetIndex * step), behavior: "smooth" });
+  }
+
+  // ─── Swipe kecil pun langsung pindah 1 frame (persis seperti slide vertikal) — mobile ──
+  (function() {
+    let touchStartX = 0;
+    let touchStartScroll = 0;
+    let touching = false;
+
+    filmroll.addEventListener("touchstart", (e) => {
+      touching = true;
+      touchStartX = e.touches[0].clientX;
+      touchStartScroll = filmroll.scrollLeft;
+    }, { passive: true });
+
+    filmroll.addEventListener("touchend", (e) => {
+      if (!touching) return;
+      touching = false;
+      const t = e.changedTouches && e.changedTouches[0];
+      const endX = t ? t.clientX : touchStartX;
+      snapAfterDrag(touchStartScroll, touchStartX - endX); // positif = geser ke kiri (maju)
+    }, { passive: true });
+  })();
+
   // ─── Autoplay geser otomatis via scrollLeft, tetap bisa discroll/drag manual ──
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -968,17 +1376,96 @@
       filmroll.scrollLeft = dragStartScroll - (e.pageX - dragStartX);
     });
 
-    window.addEventListener("mouseup", () => {
+    window.addEventListener("mouseup", (e) => {
       if (!isDragging) return;
       isDragging = false;
       filmroll.classList.remove("is-dragging");
+      snapAfterDrag(dragStartScroll, dragStartX - e.pageX); // positif = geser ke kiri (maju)
       scheduleResume();
     });
 
-    // pause saat tab tidak aktif (hemat baterai)
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) pauseAutoplay();
-      else scheduleResume(0);
+    // tombol < > geser satu frame, lalu jeda autoplay sebentar
+    document.getElementById("galeriPrev")?.addEventListener("click", () => {
+      pauseAutoplay();
+      filmroll.scrollBy({ left: -frameStep(), behavior: "smooth" });
+      scheduleResume(1200);
+    });
+    document.getElementById("galeriNext")?.addEventListener("click", () => {
+      pauseAutoplay();
+      filmroll.scrollBy({ left: frameStep(), behavior: "smooth" });
+      scheduleResume(1200);
+    });
+  } else {
+    // reduced motion: tombol tetap geser walau autoplay mati
+    document.getElementById("galeriPrev")?.addEventListener("click", () => {
+      filmroll.scrollBy({ left: -frameStep(), behavior: "smooth" });
+    });
+    document.getElementById("galeriNext")?.addEventListener("click", () => {
+      filmroll.scrollBy({ left: frameStep(), behavior: "smooth" });
+    });
+  }
+
+  // ─── Roll kalender: dari tanggal hari ini (Now()), ngegulir pelan→cepat→berhenti di target ──
+  const DAYNAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+  // pelan di awal, ngebut di tengah, melambat & berhenti presisi di akhir
+  function easeSlowFastStop(t) {
+    if (t < 0.5) return 2 * t * t;
+    const t2 = (t - 0.5) * 2;
+    return 0.5 + (1 - Math.pow(1 - t2, 3)) * 0.5;
+  }
+
+  function rollCalendar() {
+    const strip = document.getElementById("calStrip");
+    if (!strip) return;
+    const cells = Array.from(strip.querySelectorAll(".cal-cell"));
+    if (!cells.length) return;
+
+    const today = new Date();
+    const startDay = today.getDate();
+    const startNameIdx = today.getDay();
+
+    if (reduceMotion) {
+      // langsung tampilkan hasil akhir, tanpa animasi
+      cells.forEach(cell => {
+        cell.querySelector(".cal-day").textContent = cell.dataset.targetDay;
+        cell.querySelector(".cal-dayname").textContent = cell.dataset.targetName;
+      });
+      return;
+    }
+
+    cells.forEach((cell, i) => {
+      const targetDay = Number(cell.dataset.targetDay);
+      const dayEl = cell.querySelector(".cal-day");
+      const nameEl = cell.querySelector(".cal-dayname");
+      const spins = 2; // muter dulu 2 putaran penuh biar berasa "roll" sebelum mendarat
+      const steps = spins * 31 + ((targetDay - startDay + 31) % 31);
+      const duration = 1500;
+      const delay = i * 140; // stagger tiap kolom biar rollnya kelihatan bergelombang
+      const startTime = performance.now() + delay;
+
+      function frame(now) {
+        const elapsed = now - startTime;
+        if (elapsed < 0) {
+          requestAnimationFrame(frame);
+          return;
+        }
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeSlowFastStop(progress);
+        const stepIndex = Math.floor(eased * steps);
+        const currentDay = ((startDay - 1 + stepIndex) % 31) + 1;
+        const currentNameIdx = (startNameIdx + stepIndex) % 7;
+        dayEl.textContent = String(currentDay);
+        nameEl.textContent = DAYNAMES[currentNameIdx];
+
+        if (progress < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          dayEl.textContent = cell.dataset.targetDay;
+          nameEl.textContent = cell.dataset.targetName;
+        }
+      }
+      requestAnimationFrame(frame);
     });
   }
 
@@ -988,51 +1475,35 @@
     const tanggalObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         tanggalSlide.classList.toggle("in-view", entry.isIntersecting);
+        if (entry.isIntersecting) rollCalendar();
       });
     }, { threshold: 0.4 });
     tanggalObserver.observe(tanggalSlide);
   }
 
-  // ─── Simpan ke kalender (.ics) ──────────────────────────────────────────
+  // ─── Simpan ke Google Calendar ───────────────────────────────────────────
   const saveDateBtn = document.getElementById("saveDateBtn");
   if (saveDateBtn) {
     saveDateBtn.addEventListener("click", () => {
       const pad = n => String(n).padStart(2, "0");
-      const toICSDate = date => (
+      const toGCalDate = date => (
         date.getUTCFullYear() + pad(date.getUTCMonth() + 1) + pad(date.getUTCDate()) +
         "T" + pad(date.getUTCHours()) + pad(date.getUTCMinutes()) + pad(date.getUTCSeconds()) + "Z"
       );
 
-      // acara resepsi: 29 Agustus 2026, 11.00–14.00 WIB (UTC+7)
-      const eventStart = new Date("2026-08-29T11:00:00+07:00");
-      const eventEnd = new Date("2026-08-29T14:00:00+07:00");
+      // akad 08.00–09.00 & resepsi 09.30–23.00 WIB (UTC+7), digabung jadi satu rentang acara
+      const eventStart = new Date("2026-08-29T13:00:00+07:00");
+      const eventEnd = new Date("2026-08-29T21:00:00+07:00");
 
-      const ics = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//Undangan Adi & Divetri//ID",
-        "CALSCALE:GREGORIAN",
-        "BEGIN:VEVENT",
-        "UID:" + Date.now() + "@undangan-adi-divetri",
-        "DTSTAMP:" + toICSDate(new Date()),
-        "DTSTART:" + toICSDate(eventStart),
-        "DTEND:" + toICSDate(eventEnd),
-        "SUMMARY:Pernikahan M. Rizky Adi Prasetyo & Divetri Ayu Rahmawati",
-        "LOCATION:Grand Ballroom Hotel Mulia\\, Jl. Asia Afrika\\, Jakarta",
-        "DESCRIPTION:Kehadiran dan doa restu Anda adalah hadiah terbesar bagi kami.",
-        "END:VEVENT",
-        "END:VCALENDAR",
-      ].join("\r\n");
+      const params = new URLSearchParams({
+        action: "TEMPLATE",
+        text: "Pernikahan M. Rizky Adi Prasetyo & Divetri Ayu Rahmawati",
+        dates: toGCalDate(eventStart) + "/" + toGCalDate(eventEnd),
+        location: "https://maps.app.goo.gl/SPgopX5LquRexQTD8",
+        details: "Kehadiran dan doa restu Anda adalah hadiah terbesar bagi kami.",
+      });
 
-      const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "pernikahan-adi-divetri.ics";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      window.open("https://calendar.google.com/calendar/render?" + params.toString(), "_blank");
     });
   }
 
@@ -1061,6 +1532,66 @@
 
   updateCountdown();
   setInterval(updateCountdown, 1000);
+
+  // ─── Dot nav: klik/tap buat lompat ke slide tertentu ───────────────────
+  (function() {
+    const nav = document.getElementById("slideNav");
+    const slides = Array.from(document.querySelectorAll(".content-layer .slide"));
+    if (!nav || !slides.length) return;
+
+    slides.forEach((slide, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.dataset.index = String(i);
+      btn.setAttribute("aria-label", "Ke slide " + (i + 1));
+      btn.addEventListener("click", () => {
+        slide.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      nav.appendChild(btn);
+    });
+
+    const dots = Array.from(nav.querySelectorAll("button"));
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const idx = slides.indexOf(entry.target);
+        if (idx === -1) return;
+        dots[idx].classList.toggle("is-active", entry.isIntersecting);
+      });
+    }, { threshold: 0.5 });
+
+    slides.forEach(slide => navObserver.observe(slide));
+  })();
+
+  // ─── Trap tap: 1/3 atas layar = slide sebelumnya, 1/3 bawah = slide berikutnya ──
+  (function() {
+    const contentLayer = document.querySelector(".content-layer");
+    const slides = Array.from(document.querySelectorAll(".content-layer .slide"));
+    if (!contentLayer || !slides.length) return;
+
+    // area yang punya interaksi sendiri (drag galeri, tombol, dot nav) dikecualikan
+    const IGNORE_SELECTOR = ".filmroll, .galeri-nav, .save-date-btn, .slide-nav, a, button";
+
+    contentLayer.addEventListener("click", (e) => {
+      if (e.target.closest(IGNORE_SELECTOR)) return;
+
+      const y = e.clientY;
+      const h = window.innerHeight;
+      const zone = y < h / 3 ? "up" : (y > (h * 2) / 3 ? "down" : null);
+      if (!zone) return;
+
+      // slide yang paling terlihat saat ini, ditentukan dari jarak scrollTop
+      let currentIndex = 0;
+      let closestDist = Infinity;
+      slides.forEach((slide, i) => {
+        const dist = Math.abs(slide.getBoundingClientRect().top);
+        if (dist < closestDist) { closestDist = dist; currentIndex = i; }
+      });
+
+      const targetIndex = zone === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (targetIndex < 0 || targetIndex >= slides.length) return;
+      slides[targetIndex].scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  })();
 
   // ─── Sembunyikan scroll hint setelah user scroll ───────────────────────
   const hint = document.getElementById("scrollHint");
