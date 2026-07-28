@@ -255,6 +255,20 @@
     justify-content: center;
   }
 
+  .hero-disclaimer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 1.25rem;
+    z-index: 1;
+    margin: 0;
+    padding: 0 2rem;
+    text-align: center;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 11px;
+    color: rgba(184, 176, 155, 0.75);
+  }
+
   .card {
     background: rgba(255, 255, 255, 0.07);
     backdrop-filter: blur(12px);
@@ -410,7 +424,7 @@
 
   .card .venue {
     font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     color: rgba(184, 176, 155, 0.63);
     margin-top: 0.5rem;
   }
@@ -564,6 +578,16 @@
     padding: 0;
   }
 
+  @media (max-width: 700px) {
+    .slide-ayat {
+      padding: 2rem 1.25rem;
+    }
+
+    .slide-ayat .card {
+      padding: 0;
+    }
+  }
+
   .ayat-photo {
     position: absolute;
     inset: 0;
@@ -669,6 +693,39 @@
     border-color: rgba(255, 255, 255, 0.14);
   }
 
+  .slide-tanggal .card .label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .slide-tanggal .cal-month {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .slide-tanggal .cal-dayname {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .slide-tanggal .cal-day {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .slide-tanggal .cal-cell--active .cal-dayname {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .slide-tanggal .cal-cell--active .cal-day {
+    color: #ffffff;
+  }
+
+  .slide-tanggal .cd-num {
+    color: #ffffff;
+  }
+
+  .slide-tanggal .cd-label {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
   /* tombol pill "Simpan Tanggal" — CTA terpisah dari .label (title), diletakkan di bawah countdown */
   .slide-tanggal .save-date-btn {
     position: relative;
@@ -680,9 +737,10 @@
     border: 1px solid rgba(255, 152, 0, 0.6);
     border-radius: 999px;
     background: rgba(255, 152, 0, 0.08);
-    color: rgba(184, 176, 155, 0.9);
-    font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.75rem;
+    color: #ffffff;
+    //font-family: 'Source Serif Pro', Georgia, serif;
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-size: 1.15rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     opacity: 0;
@@ -752,7 +810,7 @@
   /* ─── 1. Potongan kalender: bulan Agustus 2026, tanggal 29 disorot, sekitarnya diburamkan ──── */
   .cal-month {
     font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     letter-spacing: 0.25em;
     text-transform: uppercase;
     color: rgba(184, 176, 155, 0.63);
@@ -778,7 +836,7 @@
 
   .cal-dayname {
     font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: rgba(184, 176, 155, 0.5);
@@ -786,7 +844,7 @@
 
   .cal-day {
     font-family: 'Dream Avenue', Georgia, serif;
-    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+    font-size: clamp(1.3rem, 4vw, 1.75rem);
     color: rgba(184, 176, 155, 0.4);
     line-height: 1;
   }
@@ -800,7 +858,7 @@
   }
 
   .cal-cell--active .cal-day {
-    font-size: clamp(2.4rem, 9vw, 4rem);
+    font-size: clamp(2.8rem, 10vw, 4.5rem);
     color: #B8B09B;
     padding: 0 0.1em;
   }
@@ -813,14 +871,15 @@
   /* ─── 2 & 3. Jam akad & resepsi ──────────────────────────────────────── */
   .event-times {
     display: flex;
-    justify-content: center;
-    gap: clamp(1.5rem, 6vw, 3rem);
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
     margin-bottom: 1.5rem;
   }
 
   .event-time .event-label {
     font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.7rem;
+    font-size: 1.5rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: rgba(184, 176, 155, 0.63);
@@ -829,7 +888,7 @@
 
   .event-time .event-hour {
     font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: clamp(0.9rem, 3vw, 1.05rem);
+    font-size: clamp(1.05rem, 3.5vw, 1.25rem);
     color: #B8B09B;
   }
 
@@ -849,14 +908,14 @@
 
   .cd-num {
     font-family: 'Dream Avenue', Georgia, serif;
-    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    font-size: clamp(1.75rem, 6vw, 2.6rem);
     color: #B8B09B;
     line-height: 1;
   }
 
   .cd-label {
     font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: rgba(184, 176, 155, 0.63);
@@ -893,6 +952,20 @@
     color: #ffffff;
   }
 
+  .slide-resepsi .card .label {
+    //font-size: 0.85rem;
+    font-size: 1.25rem;
+  }
+
+  @media (max-width: 700px) {
+    .slide-resepsi .card {
+      padding: 1.75rem 1.5rem;
+      max-height: calc(100vh - 4rem);
+      max-height: calc(100dvh - 4rem);
+      overflow-y: auto;
+    }
+  }
+
   .slide-resepsi .card .label,
   .slide-resepsi .card p,
   .slide-resepsi .card .date,
@@ -900,52 +973,45 @@
     color: rgba(255, 255, 255, 0.63);
   }
 
-  /* ─── QR placeholder lokasi maps (dipakai ulang untuk akad & resepsi) ──── */
-  .qr-row {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: clamp(1.5rem, 6vw, 3rem);
-    margin-top: 1.75rem;
-  }
-
-  .qr-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .qr-placeholder {
-    width: 92px;
-    height: 92px;
-    border: 1px dashed rgba(255, 255, 255, 0.4);
-    border-radius: 8px;
+  /* ─── Link lokasi maps resepsi ──── */
+  .maps-link {
+    display: inline-flex;
+    margin-top: 0rem;
+    padding: 0.85rem 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
     background: rgba(255, 255, 255, 0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.45);
-    line-height: 1.4;
+    text-decoration: none;
+    transition: background 0.2s ease;
   }
 
-  .qr-label {
+  .maps-link:hover,
+  .maps-link:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .maps-label {
     font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.63);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
     text-align: center;
     line-height: 1.5;
+  }
+
+  .maps-label-header {
+    display: block;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.63);
+    margin-bottom: 0.3rem;
   }
 
   .qr-venue {
     display: block;
     font-family: 'Dream Avenue', Georgia, serif;
-    font-size: 0.85rem;
+    font-size: 1.25rem;
+    letter-spacing: 0.05em;
     color: #ffffff;
     margin-top: 0.15rem;
   }
@@ -1069,12 +1135,11 @@
           <div class="divider"></div>
           <p>kepada yang terhormat</p>
           <h3 class="guest-name">"NAMA"</h3>
-          
-          <p style="font-size:12px">Mohon maaf apabila terjadi kesalah dalam penulisan nama.</p>
         </div>
         <div class="hero-third hero-bottom" aria-hidden="true"></div>
       </div>
     </div>
+    <p class="hero-disclaimer">Mohon maaf apabila terjadi kesalahan dalam penulisan nama.</p>
   </section>
 
   <section class="slide slide-ayat" id="slide-ayat">
@@ -1119,9 +1184,9 @@
   <section class="slide slide-tanggal" id="slide-3">
     <div class="tanggal-photo" aria-hidden="true"></div>
     <div class="card">
-      <p class="label">Catat dan simpan tanggal</p>
+      <p class="label" style="font-size:1.25rem;">Catat dan simpan tanggal</p>
 
-      <div class="cal-month">Agustus 2026</div>
+      <div class="cal-month" style="font-size:1.15rem;">Agustus 2026</div>
       <div class="cal-strip" id="calStrip" aria-hidden="true">
         <div class="cal-cell" data-target-day="27" data-target-name="Kamis"><span class="cal-dayname">Kamis</span><span class="cal-day">27</span></div>
         <div class="cal-cell" data-target-day="28" data-target-name="Jumat"><span class="cal-dayname">Jumat</span><span class="cal-day">28</span></div>
@@ -1144,34 +1209,24 @@
   <section class="slide slide-resepsi" id="slide-4">
     <div class="resepsi-photo" aria-hidden="true"></div>
     <div class="card">
-      <p class="label">Akad Nikah &amp; Resepsi</p>
-      <h2>Selamat Datang</h2>
-      <div class="divider"></div>
-      <p>Kehadiran dan doa restu Anda adalah hadiah terbesar bagi kami.</p>
-
       <div class="event-times">
         <div class="event-time">
-          <p class="event-label">Akad Nikah</p>
-          <p class="event-hour">08.00 – 09.00 WIB</p>
-          <p class="venue">Kantor KUA Welahan</p>
+          <p class="event-label" style="margin-bottom:0;">Akad Nikah</p>
+          <p class="event-hour" style="font-size:1.40rem;">08.00 – 09.00 WIB</p>
+          <p class="venue" style="font-size:1.25rem; margin-top:0;">Kantor KUA Welahan</p>
         </div>
+        <div class="divider" style="margin-bottom:0;"></div>
         <div class="event-time">
-          <p class="event-label">Resepsi</p>
-          <p class="event-hour">13.00 – 21.00 WIB</p>
-          <p class="venue">Kediaman Mempelai Wanita</p>
+          <p class="event-label" style="margin-bottom:0;">Resepsi</p>
+          <p class="event-hour" style="font-size:1.40rem;">13.00 – 21.00 WIB</p>
+          <p class="venue" style="font-size:1.25rem;margin-top:0;">Kediaman Mempelai Wanita</p>
         </div>
       </div>
-
-      <div class="qr-row">
-        <div class="qr-item">
-          <div class="qr-placeholder" aria-hidden="true">QR<br>Maps</div>
-          <p class="qr-label">Lokasi Akad<br><span class="qr-venue">MUA Welahan</span></p>
-        </div>
-        <div class="qr-item">
-          <div class="qr-placeholder" aria-hidden="true">QR<br>Maps</div>
-          <p class="qr-label">Lokasi Resepsi<br><span class="qr-venue">Kediaman Mempelai Wanita</span></p>
-        </div>
-      </div>
+        <div class="divider"></div>
+      <p class="label">Lokasi Resepsi</p>
+      <a class="maps-link" href="https://maps.app.goo.gl/qYrkhyF3yTiV7eRz6" target="_blank" rel="noopener">
+        <span class="maps-label"><span class="qr-venue">Rumah Mempelai Wanita</span></span>
+      </a>
     </div>
   </section>
 
