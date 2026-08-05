@@ -2,11 +2,24 @@
 
 Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar konsep (node) dan relasi antar konsep (edge).
 
-**Versi saat ini: v2.2**
+**Versi saat ini: v2.5**
 
 ---
 
 ## Changelog
+
+### v2.5 — 2026-08-05
+- Update node impl: `impl-loading-screen` — animasi transisi diganti dari fade menjadi slide, dengan dua jalur berbeda tergantung hasil fetch Firestore: (1) data tamu valid — seluruh loading screen slide ke atas (`translateY(-100%)`) sekaligus `.content-layer` slide masuk dari bawah (`translateY(48px)` → `0`, dibarengi fade opacity); (2) tidak ada data — logo Adi & Divetri di loading screen slide turun & lenyap (`translateY(160%)`, opacity 0) diikuti teks kredit fade-out, lalu `.gate-page` ("Mohon doa dan restu...") fade-in via class `is-visible` setelah event `transitionend` pada logo. Kedua jalur punya fallback instan (tanpa animasi) saat `prefers-reduced-motion: reduce` aktif, dicek via `matchMedia` di awal skrip
+- Total: 65 node · 82 edge
+
+### v2.4 — 2026-08-05
+- Update node impl: `impl-loading-screen` — konten diganti dari teks "Memuat undangan..." beranimasi pulse menjadi logo `assets/title_adidivetri_2.svg` (Adi & Divetri) di tengah dengan animasi pulse, diikuti teks kredit statis "Build by Adipresto. Supervised by Dive. Powered by Dreamlabs" di bawahnya
+- Total: 65 node · 82 edge
+
+### v2.3 — 2026-08-05
+- Tambah node impl: `impl-loading-screen` — layar hitam (`#loadingScreen`) menutupi seluruh halaman secara default (`html.is-loading`) selama menunggu fetch async Firestore (`impl-guest-gate`) selesai, dengan teks "Memuat undangan..." beranimasi pulse (dimatikan saat `prefers-reduced-motion`). Setelah hasil didapat (baik nama tamu valid maupun gate-blocked), loading screen fade-out opacity dan dihapus dari DOM, sementara konten/gate di baliknya fade-in — mencegah flash konten mentah (placeholder "NAMA" atau gate kosong) saat delay jaringan
+- Tambah edge: `impl-guest-gate` → `impl-loading-screen`, `page-filmroll-demo` → `impl-loading-screen`
+- Total: 65 node · 82 edge
 
 ### v2.2 — 2026-08-05
 - Tambah node edge case: `ec-guestname-overflow` — nama tamu panjang di `.slide-hero .guest-name` bisa wrap dan menabrak wax seal (background `assets/amplome-cropped.png`), karena posisi stempel fixed relatif ke viewport, bukan mengikuti tinggi konten kartu
@@ -202,6 +215,7 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 | impl-guest-gate | Gate Akses via Parameter URL | `?p=<kode>` dicocokkan ke `GUEST_MAP` (object kode → nama tamu) di JS. Kode tidak valid/kosong → `<html>` dapat class `gate-blocked`, menampilkan overlay gate penuh ("Mohon doa dan restu atas pernikahan kami") menutupi konten. Kode valid → nama tamu disuntik ke `.slide-hero .guest-name`, menggantikan placeholder "Siapa kamu?". Tanpa backend — daftar tamu hardcoded di JS. |
 | impl-countdown | Countdown Pernikahan | Hitung mundur real-time (hari/jam/menit/detik) di `slide-tanggal` (`#cd-days`, `#cd-hours`, `#cd-mins`, `#cd-secs`) menuju `2026-08-29T08:00:00+07:00`, di-update tiap detik via `setInterval`. |
 | impl-guestname-fit | Auto-Shrink Nama Tamu | Fungsi JS `fitGuestName()` di `index.html`: setelah nama tamu disuntik (dari Firestore atau placeholder), font-size `.guest-name` diperkecil bertahap (step 1px, minimum 16px) selama `getBoundingClientRect().bottom` elemen melewati batas aman ~62% tinggi `.slide-hero` — bukan diukur dari tinggi kontainer flex `.hero-middle` (yang bisa menyusut/collapse dan memberi hasil ukur keliru), melainkan posisi viewport aktual wax seal. Dipanggil ulang saat `resize`. Tidak memotong teks — nama tetap wrap penuh, hanya diperkecil agar tidak menabrak stempel. |
+| impl-loading-screen | Loading Screen saat Fetch Firestore | Layar hitam (`#loadingScreen`) menutupi halaman secara default (`html.is-loading`) selama fetch async ke Firestore (`impl-guest-gate`) berlangsung, menampilkan logo Adi & Divetri di tengah beranimasi pulse (dimatikan saat `prefers-reduced-motion`), diikuti teks kredit statis "Built by Adipresto. Supervised by Dive. Powered by Dreamlabs" di bawah logo. Dua jalur reveal: (1) data tamu valid — loading screen slide ke atas keluar viewport, `.content-layer` slide masuk dari bawah; (2) tidak ada data — logo slide turun & lenyap, lalu `.gate-page` fade-in. Fallback instan tanpa animasi saat `prefers-reduced-motion` aktif. |
 
 ### Teknologi / API
 | ID | Label | Deskripsi |
@@ -300,6 +314,8 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 - `slide-tanggal` → `impl-countdown`
 - `page-filmroll-demo` → `slide-resepsi`
 - `page-filmroll-demo` → `impl-guest-gate`
+- `page-filmroll-demo` → `impl-loading-screen`
+- `impl-guest-gate` → `impl-loading-screen`
 
 ### Film Roll Loop → Implementasi Baru
 - `film-roll` → `impl-film-filter`

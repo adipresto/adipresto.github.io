@@ -1,6 +1,6 @@
 # Ringkasan Docs
 
-Ringkasan ini digenerate dari `docs/knowledge-graph.md` (v1.13) — dokumen itu adalah satu-satunya sumber requirements proyek. Update ringkasan ini setiap kali knowledge graph berubah.
+Ringkasan ini digenerate dari `docs/knowledge-graph.md` (v2.5) — dokumen itu adalah satu-satunya sumber requirements proyek. Update ringkasan ini setiap kali knowledge graph berubah.
 
 ## Permintaan Utama
 
@@ -73,3 +73,11 @@ Palet warna resmi yang direncanakan untuk kartu konten: teks header `#5a1919`, t
 ## Slide Simpan Tanggal
 
 Slide berisi tombol pill "Simpan Tanggal" (`#saveDateBtn`) dengan animasi sparkle berulang saat slide masuk viewport, dideteksi lewat `IntersectionObserver`. Klik tombol membuka tab baru ke `calendar.google.com/calendar/render` dengan parameter `action=TEMPLATE`, `text`, `dates` (dikonversi ke UTC dari jadwal resepsi 29 Agustus 2026, 11.00–14.00 WIB), `location`, dan `details` — event otomatis terisi tanpa perlu backend atau OAuth. Ini menggantikan pendekatan sebelumnya yang men-download file `.ics` via Blob; trade-off-nya, user Apple Calendar/Outlook tidak lagi terlayani otomatis dan harus menambahkan event secara manual.
+
+---
+
+## Loading Screen saat Fetch Firestore
+
+Nama tamu di slide hero diambil dari Firestore secara async berdasarkan parameter URL `?p=<uid>` (`impl-guest-gate`), yang punya delay jaringan sebelum hasilnya diketahui. Untuk mencegah user melihat flash konten mentah (placeholder nama tamu atau gate kosong) saat delay itu, halaman menampilkan layar hitam penuh (`#loadingScreen`) secara default: logo "Adi & Divetri" (`assets/title_adidivetri_2.svg`) di tengah beranimasi pulse (nonaktif saat `prefers-reduced-motion`), diikuti teks kredit statis "Built by Adipresto. Supervised by Dive. Powered by Dreamlabs" di bawah logo.
+
+Begitu hasil fetch diketahui, ada dua jalur animasi slide berbeda: jika nama tamu valid, seluruh loading screen slide ke atas keluar viewport sementara konten halaman (`.content-layer`) slide masuk dari bawah; jika tidak ada data tamu (gate-blocked), logo di loading screen slide turun dan lenyap (teks kredit ikut fade-out), lalu halaman gate ("Mohon doa dan restu atas pernikahan kami") fade-in menggantikannya. Kedua jalur punya fallback tampil instan tanpa animasi saat `prefers-reduced-motion` aktif.

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="is-loading">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -392,6 +392,99 @@
   html.gate-blocked .content-layer,
   html.gate-blocked #scrollHint {
     display: none;
+  }
+
+  /* ─── Loading screen: ditampilkan selama menunggu jawaban Firestore ────── */
+  .loading-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    background: #0d0d0d;
+    transition: transform 0.7s ease;
+  }
+
+  /* kasus 1: data tamu valid — seluruh loading screen slide ke atas, konten menyingkap */
+  .loading-screen.is-hidden {
+    transform: translateY(-100%);
+    pointer-events: none;
+  }
+
+  .loading-screen .loading-logo {
+    max-width: 130px;
+    width: 40vw;
+    animation: loading-pulse 1.8s ease-in-out infinite;
+    transition: transform 0.6s ease, opacity 0.6s ease;
+  }
+
+  .loading-screen .loading-credit {
+    font-family: 'Source Serif Pro', Georgia, serif;
+    font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+    letter-spacing: 0.04em;
+    color: rgba(184, 176, 155, 0.55);
+    text-align: center;
+    transition: opacity 0.4s ease;
+  }
+
+  /* kasus 2: tidak ada data — logo slide turun & menghilang, layar tetap hitam */
+  .loading-screen.logo-exit {
+    transform: translateY(0);
+  }
+
+  .loading-screen.logo-exit .loading-logo {
+    animation: none;
+    transform: translateY(160%);
+    opacity: 0;
+  }
+
+  .loading-screen.logo-exit .loading-credit {
+    opacity: 0;
+  }
+
+  @keyframes loading-pulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .loading-screen .loading-logo {
+      animation: none;
+      opacity: 1;
+    }
+
+    .loading-screen,
+    .loading-screen .loading-logo,
+    .loading-screen .loading-credit,
+    .content-layer,
+    .gate-page {
+      transition: none !important;
+    }
+  }
+
+  /* konten slide masuk dari bawah saat loading screen slide pergi */
+  .content-layer {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  html.is-loading .content-layer {
+    opacity: 0;
+    transform: translateY(48px);
+  }
+
+  /* gate page: fade-in setelah logo loading screen slide turun & lenyap */
+  .gate-page {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  html.gate-blocked .gate-page.is-visible {
+    opacity: 1;
   }
 
   .card p {
@@ -1249,6 +1342,12 @@
 <!-- dot nav: tap/klik buat lompat ke slide tertentu -->
 <nav class="slide-nav" id="slideNav" aria-label="Navigasi slide"></nav>
 
+<!-- loading screen: nutupi halaman selama menunggu jawaban Firestore -->
+<div class="loading-screen" id="loadingScreen">
+  <img src="assets/title_adidivetri_2.svg" alt="Adi &amp; Divetri" class="loading-logo">
+  <p class="loading-credit">Built by Adipresto. Supervised by Dive. Powered by Dreamlabs</p>
+</div>
+
 <!-- gate: tampil satu-satunya kalau ?p tidak valid -->
 <div class="gate-page" id="gatePage">
       <div class="gate-text">
@@ -1296,6 +1395,7 @@
 
     if (!guestName) {
       document.documentElement.classList.add("gate-blocked");
+      revealGate();
       return;
     }
 
@@ -1304,7 +1404,44 @@
       guestNameEl.textContent = guestName;
       fitGuestName(guestNameEl);
     }
+    revealContent();
   })();
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ─── Kasus 1: data tamu valid — loading screen slide ke atas, konten slide masuk ──
+  function revealContent() {
+    document.documentElement.classList.remove("is-loading");
+    const loadingScreen = document.getElementById("loadingScreen");
+    if (!loadingScreen) return;
+
+    if (prefersReducedMotion) {
+      loadingScreen.remove();
+      return;
+    }
+
+    loadingScreen.classList.add("is-hidden");
+    loadingScreen.addEventListener("transitionend", () => loadingScreen.remove(), { once: true });
+  }
+
+  // ─── Kasus 2: tidak ada data — logo slide turun & lenyap, lalu teks gate fade-in ──
+  function revealGate() {
+    const loadingScreen = document.getElementById("loadingScreen");
+    const gatePage = document.getElementById("gatePage");
+    const logo = loadingScreen ? loadingScreen.querySelector(".loading-logo") : null;
+
+    if (prefersReducedMotion || !loadingScreen || !logo) {
+      if (gatePage) gatePage.classList.add("is-visible");
+      if (loadingScreen) loadingScreen.remove();
+      return;
+    }
+
+    loadingScreen.classList.add("logo-exit");
+    logo.addEventListener("transitionend", () => {
+      gatePage.classList.add("is-visible");
+      loadingScreen.remove();
+    }, { once: true });
+  }
 
   // ─── Cegah nama tamu yang panjang menabrak wax seal di background foto ──
   // Posisi wax seal itu fixed relatif ke viewport (background-position 65%
