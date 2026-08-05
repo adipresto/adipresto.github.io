@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Film Roll Photo Loop</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #0d0d0d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  /* ===== GANTI DAFTAR GAMBAR DI SINI (lihat script paling bawah) ===== */
+
+  .filmroll {
+    width: 100%;
+    overflow: hidden;
+    background: #1a1a1a;
+    padding: 14px 0;
+    position: relative;
+  }
+
+  /* lubang sprocket atas & bawah */
+  .filmroll::before,
+  .filmroll::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 14px;
+    background-image: repeating-linear-gradient(
+      to right,
+      #0d0d0d 0 6px,
+      transparent 6px 20px
+    );
+    background-size: 20px 100%;
+  }
+  .filmroll::before { top: 0; }
+  .filmroll::after { bottom: 0; }
+
+  .filmroll-track {
+    display: flex;
+    width: max-content;
+    animation: scrollLeft 25s linear infinite;
+  }
+
+  .filmroll:hover .filmroll-track,
+  .filmroll-track.is-paused {
+    animation-play-state: paused;
+  }
+
+  @keyframes scrollLeft {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); } /* karena frame di-duplikasi 2x, -50% = satu loop penuh */
+  }
+
+  .frame {
+    flex: 0 0 auto;
+    width: 160px;
+    aspect-ratio: 3 / 4; /* rasio potrait, sesuaikan kalau perlu */
+    margin: 0 6px;
+    background: #000;
+    border: 3px solid #2b2b2b;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    /* Portra 400: hangat, sedikit lifted, skin-tone flattering */
+    filter: sepia(0.12) contrast(1.04) brightness(1.07) saturate(1.15);
+  }
+
+  /* vignette gelap di tepi frame */
+  .frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(0,0,0,0.28) 100%);
+    pointer-events: none;
+  }
+
+  /* grain overlay */
+  .filmroll-grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    opacity: 0.06;
+    background-size: 256px 256px;
+  }
+
+  /* light leak oranye dari kiri */
+  .filmroll-leak {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(180, 70, 8, 0.12), transparent 30%);
+  }
+
+  .frame-number {
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+    font-family: monospace;
+    font-size: 10px;
+    color: #ff9800;
+    opacity: 0.75;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .filmroll-track {
+      animation: none;
+      width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    /* sembunyikan set duplikasi saat animasi mati */
+    .filmroll-track .frame[aria-hidden="true"] {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="filmroll">
+  <div class="filmroll-track" id="track"></div>
+  <div class="filmroll-grain" id="grain"></div>
+  <div class="filmroll-leak"></div>
+</div>
+
+<script>
+  // 1) Isi array ini dengan URL foto potrait lo (urutan sesuai keinginan)
+  const photos = [
+    "photos/0.JPG",
+    "photos/2.JPG",
+    "photos/3.JPG",
+    "photos/4.JPG",
+    "photos/5.JPG",
+  ];
+
+  // Detik per frame — ubah angka ini untuk mempercepat/memperlambat
+  const SECS_PER_FRAME = 4;
+
+  // 2) Render satu set frame; isHidden=true untuk set duplikasi (aria-hidden)
+  function renderFrames(list, isHidden = false) {
+    return list.map((src, i) => `
+      <div class="frame"${isHidden ? ' aria-hidden="true"' : ""}>
+        <img src="${src}" alt="${isHidden ? "" : "foto " + (i + 1)}">
+        <span class="frame-number">${String(i + 1).padStart(2, "0")}</span>
+      </div>
+    `).join("");
+  }
+
+  // 3) Jika foto sedikit (<8), perbanyak salinan agar gap loop tidak kentara
+  function buildPhotoList(list) {
+    const MIN_VISIBLE = 8;
+    let expanded = [...list];
+    while (expanded.length < MIN_VISIBLE) {
+      expanded = [...expanded, ...list];
+    }
+    return expanded;
+  }
+
+  const track = document.getElementById("track");
+  const expanded = buildPhotoList(photos);
+
+  // Durasi proporsional terhadap jumlah foto
+  const duration = expanded.length * SECS_PER_FRAME;
+  track.style.animationDuration = duration + "s";
+
+  // Render set asli + set duplikasi (aria-hidden agar tidak dibaca screen reader 2x)
+  track.innerHTML = renderFrames(expanded) + renderFrames(expanded, true);
+
+  // 4) Generate grain texture sekali, pakai sebagai background overlay
+  (function() {
+    const c = document.createElement("canvas");
+    c.width = 256; c.height = 256;
+    const ctx = c.getContext("2d");
+    const img = ctx.createImageData(256, 256);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = (Math.random() * 255) | 0;
+      d[i] = d[i+1] = d[i+2] = v; d[i+3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    document.getElementById("grain").style.backgroundImage = "url(" + c.toDataURL() + ")";
+  })();
+
+  // 5) Touch pause/resume untuk mobile (pengganti :hover yang tidak jalan di touchscreen)
+  track.addEventListener("touchstart", () => track.classList.add("is-paused"), { passive: true });
+  track.addEventListener("touchend",   () => track.classList.remove("is-paused"), { passive: true });
+</script>
+
+</body>
+</html>

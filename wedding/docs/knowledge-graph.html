@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Graph — Undangan Online</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; background: #091525; }
+canvas { display: block; }
+
+#tooltip {
+  position: fixed;
+  background: rgba(10, 24, 48, 0.96);
+  border: 1px solid #1E3A60;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #C8D8EA;
+  pointer-events: none;
+  display: none;
+  max-width: 240px;
+  line-height: 1.6;
+  z-index: 100;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+#legend {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(10, 24, 48, 0.88);
+  border: 1px solid #1E3A60;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  backdrop-filter: blur(8px);
+}
+#legend h4 {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #3A5A7A;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  color: #7A9AB8;
+}
+.legend-item:last-child { margin-bottom: 0; }
+.legend-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+#hdr {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  pointer-events: none;
+}
+#hdr h1 {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #E8A030;
+  text-transform: uppercase;
+}
+#hdr p {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #2A4060;
+  margin-top: 3px;
+  letter-spacing: 0.04em;
+}
+#hdr .version {
+  display: inline-block;
+  margin-top: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #1E3A5A;
+  background: rgba(232,160,48,0.08);
+  border: 1px solid rgba(232,160,48,0.18);
+  border-radius: 3px;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+
+#hint {
+  position: fixed;
+  bottom: 22px;
+  right: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #1E3A5A;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+
+#stats {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #2A4A6A;
+  text-align: right;
+  pointer-events: none;
+  line-height: 1.8;
+}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <h1>Undangan Online — Knowledge Graph</h1>
+  <p>docs/requirements.md · docs/filmrollloop-requirements.md</p>
+  <span class="version">v2.2 · 2026-08-05</span>
+</div>
+
+<div id="stats">
+  64 nodes · 80 edges
+</div>
+
+<canvas id="g"></canvas>
+<div id="tooltip"></div>
+
+<div id="legend">
+  <h4>Kategori</h4>
+  <div class="legend-item"><div class="legend-dot" style="background:#E8A030"></div> Root</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4A9EFF"></div> Komponen / Fitur</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FF6A6A"></div> Edge Case</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#48D68A"></div> Implementasi</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#A87FFF"></div> Teknologi / API</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#20C9D0"></div> Halaman</div>
+</div>
+
+<div id="hint">drag node · hover untuk detail</div>
+
+<script>
+const canvas = document.getElementById('g');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const C = {
+  root: '#E8A030',
+  component: '#4A9EFF',
+  edgecase: '#FF6A6A',
+  impl: '#48D68A',
+  tech: '#A87FFF',
+  page: '#20C9D0',
+};
+
+const nodes = [
+  { id: 'root',          label: 'Undangan Online',         type: 'root',      r: 22, desc: 'Halaman undangan online dengan video background fixed dan konten yang bergeser seperti slide saat scroll.' },
+  { id: 'video-bg',      label: 'Video Background',        type: 'component', r: 17, desc: 'Video kompilasi ringan sebagai latar belakang halaman. Posisi fixed saat halaman di-scroll.' },
+  { id: 'film-roll',     label: 'Film Roll Loop',           type: 'component', r: 17, desc: 'Strip foto bergerak horizontal secara seamless dan looping. Path: components/film-roll-loop/film-roll-loop.html' },
+  { id: 'slide-scroll',  label: 'Konten Slide',             type: 'component', r: 14, desc: 'Konten isi halaman bergeser seperti slide presentasi saat user melakukan scroll.' },
+  { id: 'slide-galeri',  label: 'Slide Galeri',             type: 'component', r: 14, desc: 'Slide terakhir di page-filmroll-demo yang menampilkan film-roll-loop sebagai konten (bukan lagi background fixed).' },
+  { id: 'slide-hero',    label: 'Slide Hero (Cover)',       type: 'component', r: 14, desc: 'Slide pertama di page-filmroll-demo — layout split-screen: foto full-bleed di kanan, teks undangan di area hitam kiri. Judul pasangan pakai gambar SVG (assets/tittle_adidivetri.svg), bukan teks h1. Responsive: stack vertikal di mobile.' },
+  { id: 'slide-ayat',    label: 'Slide Ayat Ar-Rum',        type: 'component', r: 14, desc: 'Slide kedua di page-filmroll-demo — kartu berlatar polos gelap berisi judul surah "Surah Ar-Rum", label "Ar-Rum · Ayat 21", dan lafaz Basmalah dalam huruf Arab.' },
+  { id: 'slide-mempelai-pria',   label: 'Slide Mempelai Pria',   type: 'component', r: 14, desc: 'Slide ketiga di page-filmroll-demo — foto full-bleed photos/12.jpeg, kartu nama mempelai pria (M. Rizky Adi Prasetyo) + nama orang tua.' },
+  { id: 'slide-mempelai-wanita', label: 'Slide Mempelai Wanita', type: 'component', r: 14, desc: 'Slide ketiga di page-filmroll-demo — foto full-bleed photos/11.jpeg, kartu nama mempelai wanita (Divetri Ayu Rahmawati) + nama orang tua.' },
+  { id: 'slide-resepsi', label: 'Slide Resepsi', type: 'component', r: 14, desc: 'Slide kelima di page-filmroll-demo — foto full-bleed photos/6.JPG dengan overlay gelap, info waktu (11.00-14.00 WIB) dan lokasi (Grand Ballroom Hotel Mulia, Jakarta).' },
+  { id: 'ec-autoplay',   label: 'Autoplay Restriction',    type: 'edgecase',  r: 11, desc: 'iOS/Android butuh atribut muted + playsinline agar autoplay berjalan tanpa interaksi user. Tanpa itu video stuck di frame pertama.' },
+  { id: 'ec-ios-fixed',  label: 'iOS Fixed Bug',           type: 'edgecase',  r: 11, desc: 'Bug Safari lama: video fixed "lepas" saat scroll momentum (rubber-band). Fix: transform: translateZ(0) atau position: sticky pada parent.' },
+  { id: 'ec-viewport',   label: 'Viewport Height',         type: 'edgecase',  r: 11, desc: 'Mobile browser me-resize viewport saat scroll (address bar collapse/expand). Gunakan 100dvh sebagai ganti 100vh.' },
+  { id: 'ec-reduced',    label: 'Reduced Motion',          type: 'edgecase',  r: 11, desc: 'prefers-reduced-motion: video dan transisi harus di-tone down atau disabled demi aksesibilitas dan hemat resource.' },
+  { id: 'ec-scrolljack', label: 'Scroll Jacking',          type: 'edgecase',  r: 11, desc: 'Custom JS scroll merusak keyboard navigation (PageDown, Space), screen reader, dan trackpad sensitivity.' },
+  { id: 'ec-videofail',  label: 'Video Load Gagal',        type: 'edgecase',  r: 11, desc: 'Jaringan putus di tengah load — area background jadi blank/broken. Harus ada fallback ke poster/gambar.' },
+  { id: 'ec-battery',    label: 'Battery & Performa',      type: 'edgecase',  r: 11, desc: 'Video loop boros baterai dan bisa membuat device low-end lag. Pause jika tab tidak visible atau section tidak kelihatan.' },
+  { id: 'ec-datasaver',  label: 'Data Saver Mode',         type: 'edgecase',  r: 11, desc: 'Cek navigator.connection.saveData — jika true, skip load video sama sekali dan tampilkan poster image saja.' },
+  { id: 'ec-codec',      label: 'Codec Compatibility',     type: 'edgecase',  r: 11, desc: 'Tidak semua browser support WebM/AVI. Butuh multiple <source> dengan fallback MP4 yang universal.' },
+  { id: 'ec-cls',        label: 'Layout Shift (CLS)',      type: 'edgecase',  r: 11, desc: 'Container video harus punya dimensi fixed dari awal agar tidak ada CLS (Cumulative Layout Shift) saat video muncul.' },
+  { id: 'ec-snap',       label: 'Scroll Snap Conflict',    type: 'edgecase',  r: 11, desc: 'scroll-snap-type: mandatory terasa kasar dan jump di iOS. Pakai proximity ketimbang mandatory agar lebih smooth.' },
+  { id: 'ec-fewphoto',   label: 'Foto Terlalu Sedikit',   type: 'edgecase',  r: 11, desc: 'Jika jumlah foto sedikit, animasi loop terlihat ngulang terlalu cepat dan tidak natural.' },
+  { id: 'ec-speed',      label: 'Kecepatan Animasi',       type: 'edgecase',  r: 11, desc: 'Kecepatan animasi strip tidak proporsional dengan jumlah foto yang ada.' },
+  { id: 'ec-altdup',     label: 'Alt Text Duplikasi',      type: 'edgecase',  r: 11, desc: 'Trik seamless menduplikasi seluruh list foto 2× di DOM — alt text dan konten ikut terduplikasi.' },
+  { id: 'ec-ratio',      label: 'Rasio Gambar Beda',       type: 'edgecase',  r: 11, desc: 'Rasio gambar tidak seragam — object-fit: cover akan memotong gambar secara tidak konsisten di tiap foto.' },
+  { id: 'ec-lazy',       label: 'Lazy Load Riskan',        type: 'edgecase',  r: 11, desc: 'loading="lazy" di dalam track bergerak horizontal riskan — foto bisa pop-in telat. Untuk <20 foto, lepas lazy agar semua preload dari awal.' },
+  { id: 'ec-hovermob',   label: 'Hover Pause Mobile',      type: 'edgecase',  r: 11, desc: 'Fitur hover-to-pause animasi tidak berjalan di perangkat touchscreen/handphone.' },
+  { id: 'ec-cors',       label: 'CORS Gambar',             type: 'edgecase',  r: 11, desc: 'Foto dari domain lain bisa gagal muncul di production jika layanan memblok hotlinking. Aman jika host sendiri.' },
+  { id: 'ec-filesize',   label: 'Ukuran File Gambar',      type: 'edgecase',  r: 11, desc: 'File gambar berukuran besar memperlambat load seluruh strip foto.' },
+  { id: 'impl-codec',    label: 'WebM + MP4 Fallback',     type: 'impl',      r: 12, desc: 'Encode video ke WebM sebagai primary source, MP4 sebagai fallback universal yang support semua browser.' },
+  { id: 'impl-720p',     label: 'Max Resolusi 720p',       type: 'impl',      r: 12, desc: 'Resolusi video tidak lebih dari 720p untuk menjaga ukuran file tetap ringan dan cepat di-load.' },
+  { id: 'impl-loop',     label: 'Loop Pendek 5–10 detik',  type: 'impl',      r: 12, desc: 'Durasi loop video dibuat pendek (5–10 detik) agar file video tetap kecil dan mudah di-buffer.' },
+  { id: 'impl-audio',    label: 'Strip Audio Track',        type: 'impl',      r: 12, desc: 'Hapus audio track dari video — tidak dibutuhkan untuk background dan hanya menambah ukuran file.' },
+  { id: 'impl-preload',  label: 'preload="metadata"',       type: 'impl',      r: 12, desc: 'Gunakan preload="metadata" bukan "auto" agar browser tidak langsung download full video sebelum user interaksi.' },
+  { id: 'impl-poster',   label: 'Poster Image Fallback',   type: 'impl',      r: 12, desc: 'Gambar status terkompresi sebagai fallback visual sebelum video ke-load atau saat video gagal load sama sekali.' },
+  { id: 'impl-conn',     label: 'Deteksi Koneksi',         type: 'impl',      r: 12, desc: 'Gunakan navigator.connection.effectiveType atau saveData — jika koneksi lemah atau save-data aktif, tampilkan poster saja.' },
+  { id: 'impl-gpu',      label: 'GPU Layer Force',          type: 'impl',      r: 12, desc: 'transform: translateZ(0) untuk memaksa GPU compositing layer — workaround untuk iOS Safari fixed scroll bug.' },
+  { id: 'impl-dvh',      label: '100dvh + fallback 100vh', type: 'impl',      r: 12, desc: 'Gunakan 100dvh (dynamic viewport height) sebagai ukuran viewport yang benar di mobile, dengan fallback 100vh.' },
+  { id: 'tech-muted',    label: 'muted + playsinline',     type: 'tech',      r: 10, desc: 'Atribut HTML wajib di elemen <video> agar autoplay berjalan di iOS dan Android tanpa interaksi user.' },
+  { id: 'tech-vis',      label: 'visibilitychange',        type: 'tech',      r: 10, desc: 'Event document.visibilitychange — digunakan untuk pause video saat tab/halaman tidak aktif/visible.' },
+  { id: 'tech-observer', label: 'IntersectionObserver',    type: 'tech',      r: 10, desc: 'Web API untuk mendeteksi apakah section video terlihat di viewport — pause jika tidak terlihat, hemat baterai.' },
+  { id: 'tech-savedata', label: 'navigator.connection',    type: 'tech',      r: 10, desc: 'navigator.connection.saveData dan effectiveType untuk deteksi mode hemat data dan kecepatan koneksi user.' },
+  { id: 'tech-snap',     label: 'scroll-snap: proximity',  type: 'tech',      r: 10, desc: 'CSS scroll-snap-type: proximity lebih smooth dan tidak kaku dibanding mandatory, terutama di iOS Safari.' },
+  { id: 'tech-objfit',   label: 'object-fit: cover',       type: 'tech',      r: 10, desc: 'CSS property untuk mengisi kontainer gambar secara penuh — akan memotong bagian gambar jika rasio tidak sesuai.' },
+  { id: 'page-filmroll-demo',   label: 'Halaman Film Roll BG',      type: 'page', r: 15, desc: 'Halaman utama undangan (entry point proyek), path index.html. Urutan slide: Hero -> Mempelai Pria -> Mempelai Wanita -> Tanggal -> Resepsi -> Galeri. Dibungkus gate akses berbasis parameter URL.' },
+  { id: 'page-filter-preview',  label: 'Film Filter Preview',        type: 'page', r: 15, desc: 'Halaman preview interaktif 6 preset filter kamera film untuk komponen film roll. Path: pages/film-filter-preview.html' },
+  { id: 'impl-filmroll-bg',   label: 'Film Roll sebagai BG',   type: 'impl', r: 12, desc: '(Historis) Awalnya film roll loop dipakai menggantikan <video> sebagai background bergerak. Kini dipindah dari background fixed menjadi konten slide Galeri tersendiri (lihat slide-galeri).' },
+  { id: 'impl-eager',         label: 'loading="eager"',         type: 'impl', r: 12, desc: 'Ganti loading="lazy" dengan loading="eager" di dalam strip horizontal agar semua foto preload dari awal, hindari pop-in telat. Solusi: ec-lazy.' },
+  { id: 'impl-touch-pause',   label: 'Touch Pause Mobile',     type: 'impl', r: 12, desc: 'touchstart/touchend untuk pause dan resume autoplay di touchscreen — pengganti :hover yang tidak berjalan di mobile. Sejak impl-manual-scroll, pause berupa flag JS yang menghentikan requestAnimationFrame, bukan toggle class CSS. Solusi: ec-hovermob.' },
+  { id: 'impl-vis-pause',     label: 'Pause visibilitychange', type: 'impl', r: 12, desc: 'Pause animasi film roll saat tab tidak aktif via document.visibilitychange untuk hemat baterai dan resource. Solusi: ec-battery.' },
+  { id: 'impl-manual-scroll', label: 'Scroll Horizontal Manual', type: 'impl', r: 12, desc: 'Film roll bisa digeser manual: drag mouse, swipe touch, scroll wheel — via overflow-x:auto native. Autoplay diubah dari CSS @keyframes ke JS requestAnimationFrame yang menggerakkan scrollLeft, agar tidak bentrok dengan scroll manual user.' },
+  { id: 'impl-film-filter',   label: 'Film Filter System',     type: 'impl', r: 12, desc: 'Sistem filter kamera film pada film roll: CSS filter per-foto, canvas grain overlay (mix-blend-mode: overlay), vignette radial-gradient per-frame, light leak gradient. Default preset: Portra 400.' },
+  { id: 'impl-typography',    label: 'Tipografi & Palet Warna', type: 'impl', r: 12, desc: 'Header pakai Dream Avenue Regular (file lokal fonts/dream-avenue-regular.otf), teks kecil pakai Source Serif Pro. Palet resmi terdokumentasi: header #5a1919, teks kecil #6c4440 opacity 63%; warna aktif saat ini sementara putih.' },
+  { id: 'tech-fontface',      label: '@font-face lokal',        type: 'tech', r: 10, desc: 'CSS @font-face untuk load file font custom (.otf/.woff) dari folder fonts/ lokal — alternatif CDN pihak ketiga yang bisa gagal load.' },
+  { id: 'impl-hero-split',    label: 'Split-Screen Hero',      type: 'impl', r: 12, desc: 'Teknik split-screen di slide-hero: foto absolute-position di belakang, teks di kolom kiri (~46% lebar). Transisi hitam-foto pakai CSS mask-image linear-gradient. Responsive: <700px jadi stack vertikal.' },
+  { id: 'impl-mempelai-split', label: 'Split Slide Mempelai',  type: 'impl', r: 12, desc: 'slide-mempelai-pria dan slide-mempelai-wanita masing-masing slide penuh dengan foto full-bleed sendiri dan overlay gelap di mobile. Desktop (>=701px): dua panel berdampingan, foto 50% + kartu info 50%, gradient fade tepi foto ke warna latar #B8B09B.' },
+  { id: 'tech-maskimage',     label: 'mask-image gradient',    type: 'tech', r: 10, desc: 'CSS mask-image/-webkit-mask-image dengan linear-gradient untuk fade transparansi elemen secara halus — dipakai untuk blend foto hero ke background hitam tanpa garis tegas.' },
+  { id: 'impl-compress-script', label: 'Skrip Kompresi Gambar', type: 'impl', r: 12, desc: 'scripts/compress-image.py — skrip Python (Pillow) untuk kompres gambar koleksi film-roll: resize ke lebar target (default 667px) dan re-encode JPEG kualitas 82. Dipakai untuk photos/6.JPG (10.73MB -> 76KB, 667x1000).' },
+  { id: 'slide-tanggal', label: 'Slide Simpan Tanggal', type: 'component', r: 14, desc: 'Slide berisi tombol pill "Simpan Tanggal" (#saveDateBtn) dengan sparkle berulang saat slide terlihat di viewport. Klik tombol membuka Google Calendar dengan event terisi otomatis.' },
+  { id: 'impl-save-gcal', label: 'Simpan Tanggal ke Google Calendar', type: 'impl', r: 12, desc: 'Klik #saveDateBtn membuka tab baru ke calendar.google.com/calendar/render dengan query action=TEMPLATE, text, dates (UTC, dari 29 Agustus 2026 11.00-14.00 WIB), location, details — event otomatis terisi tanpa backend/OAuth. Menggantikan pendekatan lama (download .ics via Blob).' },
+  { id: 'impl-guest-gate', label: 'Gate Akses via URL', type: 'impl', r: 12, desc: '?p=<kode> dicocokkan ke GUEST_MAP (kode -> nama tamu) di JS. Kode invalid -> <html> dapat class gate-blocked, overlay gate penuh menutupi konten. Kode valid -> nama tamu disuntik ke .slide-hero .guest-name. Tanpa backend, daftar tamu hardcoded.' },
+  { id: 'impl-countdown', label: 'Countdown Pernikahan', type: 'impl', r: 12, desc: 'Hitung mundur real-time (hari/jam/menit/detik) di slide-tanggal menuju 2026-08-29T08:00:00+07:00, update tiap detik via setInterval.' },
+  { id: 'ec-guestname-overflow', label: 'Nama Tamu Menabrak Wax Seal', type: 'edgecase', r: 11, desc: 'Nama tamu panjang di .slide-hero .guest-name bisa wrap dan menabrak wax seal (background assets/amplome-cropped.png), karena posisi stempel fixed relatif ke viewport, bukan mengikuti tinggi konten kartu.' },
+  { id: 'impl-guestname-fit', label: 'Auto-Shrink Nama Tamu', type: 'impl', r: 12, desc: 'Fungsi JS fitGuestName() memperkecil font-size nama tamu bertahap (berdasarkan getBoundingClientRect().bottom vs batas aman viewport) sampai tidak menabrak wax seal, tanpa memotong teks. Dipanggil ulang saat resize. Solusi: ec-guestname-overflow.' },
+];
+
+const edges = [
+  ['root','video-bg'], ['root','film-roll'], ['root','slide-scroll'], ['root','page-filter-preview'],
+  ['video-bg','ec-autoplay'], ['video-bg','ec-ios-fixed'], ['video-bg','ec-viewport'],
+  ['video-bg','ec-reduced'], ['video-bg','ec-scrolljack'], ['video-bg','ec-videofail'],
+  ['video-bg','ec-battery'], ['video-bg','ec-datasaver'], ['video-bg','ec-codec'],
+  ['video-bg','ec-cls'], ['video-bg','ec-snap'],
+  ['video-bg','impl-codec'], ['video-bg','impl-720p'], ['video-bg','impl-loop'],
+  ['video-bg','impl-audio'], ['video-bg','impl-preload'], ['video-bg','impl-poster'],
+  ['video-bg','impl-conn'],
+  ['film-roll','ec-fewphoto'], ['film-roll','ec-speed'], ['film-roll','ec-altdup'],
+  ['film-roll','ec-reduced'], ['film-roll','ec-ratio'], ['film-roll','ec-lazy'],
+  ['film-roll','ec-hovermob'], ['film-roll','ec-cors'], ['film-roll','ec-filesize'],
+  ['ec-autoplay','tech-muted'],
+  ['ec-ios-fixed','impl-gpu'],
+  ['ec-viewport','impl-dvh'],
+  ['ec-battery','tech-vis'], ['ec-battery','tech-observer'],
+  ['ec-datasaver','tech-savedata'], ['ec-datasaver','impl-conn'],
+  ['ec-codec','impl-codec'],
+  ['ec-snap','tech-snap'],
+  ['ec-ratio','tech-objfit'],
+  ['ec-videofail','impl-poster'],
+  ['impl-conn','tech-savedata'],
+  ['root','page-filmroll-demo'],
+  ['page-filmroll-demo','film-roll'],
+  ['page-filmroll-demo','impl-filmroll-bg'],
+  ['page-filmroll-demo','impl-dvh'],
+  ['page-filmroll-demo','slide-galeri'],
+  ['slide-galeri','film-roll'],
+  ['page-filmroll-demo','slide-hero'],
+  ['page-filmroll-demo','slide-ayat'],
+  ['slide-hero','impl-hero-split'],
+  ['impl-hero-split','tech-maskimage'],
+  ['slide-hero','impl-guestname-fit'],
+  ['ec-guestname-overflow','impl-guestname-fit'],
+  ['page-filmroll-demo','slide-mempelai-pria'],
+  ['page-filmroll-demo','slide-mempelai-wanita'],
+  ['slide-mempelai-pria','impl-mempelai-split'],
+  ['slide-mempelai-wanita','impl-mempelai-split'],
+  ['page-filmroll-demo','slide-resepsi'],
+  ['page-filmroll-demo','impl-guest-gate'],
+  ['slide-tanggal','impl-countdown'],
+  ['film-roll','impl-filmroll-bg'],
+  ['film-roll','impl-eager'],
+  ['film-roll','impl-touch-pause'],
+  ['film-roll','impl-vis-pause'],
+  ['film-roll','impl-manual-scroll'],
+  ['ec-lazy','impl-eager'],
+  ['ec-hovermob','impl-touch-pause'],
+  ['ec-battery','impl-vis-pause'],
+  ['impl-vis-pause','tech-vis'],
+  ['page-filter-preview','film-roll'],
+  ['page-filter-preview','impl-film-filter'],
+  ['film-roll','impl-film-filter'],
+  ['page-filmroll-demo','impl-typography'],
+  ['impl-typography','tech-fontface'],
+  ['ec-filesize','impl-compress-script'],
+  ['film-roll','impl-compress-script'],
+  ['page-filmroll-demo','slide-tanggal'],
+  ['slide-tanggal','impl-save-gcal'],
+];
+
+const nodeMap = {};
+nodes.forEach(n => nodeMap[n.id] = n);
+
+const adj = {};
+edges.forEach(([a,b]) => {
+  (adj[a] = adj[a] || new Set()).add(b);
+  (adj[b] = adj[b] || new Set()).add(a);
+});
+
+const typeAngles = { root: 0, component: 0, edgecase: Math.PI/3, impl: Math.PI, tech: -Math.PI/2, page: Math.PI/2 };
+nodes.forEach((n) => {
+  const base = typeAngles[n.type] || 0;
+  const jitter = (Math.random() - 0.5) * Math.PI * 2 * 0.6;
+  const angle = base + jitter;
+  const rad = n.type === 'root' ? 0 : n.type === 'component' ? 180 : 320 + Math.random() * 80;
+  n.x = window.innerWidth / 2 + Math.cos(angle) * rad;
+  n.y = window.innerHeight / 2 + Math.sin(angle) * rad;
+  n.vx = 0; n.vy = 0;
+});
+
+nodeMap['root'].x = window.innerWidth / 2;
+nodeMap['root'].y = window.innerHeight / 2;
+
+let hoveredNode = null;
+let dragNode = null, dragOX = 0, dragOY = 0;
+
+function nodeColor(t) { return C[t] || '#fff'; }
+
+function getNodeAt(x, y) {
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const n = nodes[i];
+    const dx = x - n.x, dy = y - n.y;
+    if (dx*dx + dy*dy <= (n.r + 5) * (n.r + 5)) return n;
+  }
+  return null;
+}
+
+const REPEL = 3200, SPRING = 0.035, REST = 130, DAMP = 0.82, CENTER = 0.0015;
+
+function simulate() {
+  const W = canvas.width, H = canvas.height;
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i+1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d2 = Math.max(dx*dx + dy*dy, 1);
+      const d = Math.sqrt(d2);
+      const f = REPEL / d2;
+      a.vx -= dx/d * f; a.vy -= dy/d * f;
+      b.vx += dx/d * f; b.vy += dy/d * f;
+    }
+  }
+  edges.forEach(([aid, bid]) => {
+    const a = nodeMap[aid], b = nodeMap[bid];
+    if (!a || !b) return;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.sqrt(dx*dx + dy*dy) || 1;
+    const f = (d - REST) * SPRING;
+    a.vx += dx/d*f; a.vy += dy/d*f;
+    b.vx -= dx/d*f; b.vy -= dy/d*f;
+  });
+  nodes.forEach(n => {
+    n.vx += (W/2 - n.x) * CENTER;
+    n.vy += (H/2 - n.y) * CENTER;
+  });
+  nodes.forEach(n => {
+    if (n === dragNode) return;
+    n.vx *= DAMP; n.vy *= DAMP;
+    n.x += n.vx; n.y += n.vy;
+    const pad = n.r + 12;
+    n.x = Math.max(pad, Math.min(W - pad, n.x));
+    n.y = Math.max(pad, Math.min(H - pad, n.y));
+  });
+}
+
+function draw() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.fillStyle = 'rgba(26,58,96,0.12)';
+  for (let x = 0; x < W; x += 36) {
+    for (let y = 0; y < H; y += 36) {
+      ctx.beginPath(); ctx.arc(x, y, 0.8, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  const hiSet = hoveredNode ? new Set([hoveredNode.id, ...(adj[hoveredNode.id] || [])]) : null;
+
+  edges.forEach(([aid, bid]) => {
+    const a = nodeMap[aid], b = nodeMap[bid];
+    if (!a || !b) return;
+    const hi = hiSet && hiSet.has(aid) && hiSet.has(bid);
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.sqrt(dx*dx + dy*dy) || 1;
+    ctx.beginPath();
+    ctx.moveTo(a.x + dx/d * a.r, a.y + dy/d * a.r);
+    ctx.lineTo(b.x - dx/d * b.r, b.y - dy/d * b.r);
+    ctx.strokeStyle = hi ? 'rgba(232,160,48,0.55)' : 'rgba(70,120,180,0.14)';
+    ctx.lineWidth = hi ? 1.5 : 0.8;
+    ctx.stroke();
+  });
+
+  nodes.forEach(n => {
+    const col = nodeColor(n.type);
+    const isHi = hiSet ? hiSet.has(n.id) : false;
+    const isHov = n === hoveredNode;
+    const dim = hiSet && !isHi;
+
+    if (isHov || isHi) {
+      const g = ctx.createRadialGradient(n.x, n.y, n.r * 0.4, n.x, n.y, n.r * 3);
+      g.addColorStop(0, col + '30');
+      g.addColorStop(1, col + '00');
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 3, 0, Math.PI*2);
+      ctx.fillStyle = g; ctx.fill();
+    }
+
+    ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+    ctx.fillStyle = dim ? col + '22' : col + (isHov ? 'EE' : 'BB');
+    ctx.fill();
+    ctx.strokeStyle = dim ? col + '18' : col + (isHov ? 'FF' : 'CC');
+    ctx.lineWidth = isHov ? 2 : 0.8;
+    ctx.stroke();
+
+    if (n.type === 'root') {
+      ctx.beginPath(); ctx.arc(n.x, n.y, 5, 0, Math.PI*2);
+      ctx.fillStyle = '#091525'; ctx.fill();
+    }
+
+    const fs = n.type === 'root' ? 12 : n.type === 'component' ? 10 : 8;
+    ctx.font = `${n.type === 'root' ? 700 : 500} ${fs}px 'Courier New', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = dim ? 'rgba(120,160,200,0.15)' : (isHov ? '#fff' : 'rgba(180,210,240,0.80)');
+
+    const words = n.label.split(' ');
+    const half = Math.ceil(words.length / 2);
+    const line1 = words.slice(0, half).join(' ');
+    const line2 = words.slice(half).join(' ');
+    const yBase = n.y + n.r + 4;
+    ctx.fillText(line1, n.x, yBase);
+    if (line2) ctx.fillText(line2, n.x, yBase + fs + 1);
+  });
+}
+
+function tick() { simulate(); draw(); requestAnimationFrame(tick); }
+tick();
+
+function pos(e) {
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return { x: t.clientX - r.left, y: t.clientY - r.top };
+}
+
+canvas.addEventListener('mousemove', e => {
+  const {x, y} = pos(e);
+  if (dragNode) {
+    dragNode.x = x + dragOX; dragNode.y = y + dragOY;
+    dragNode.vx = 0; dragNode.vy = 0; return;
+  }
+  const n = getNodeAt(x, y);
+  hoveredNode = n;
+  canvas.style.cursor = n ? 'grab' : 'default';
+  if (n) {
+    tooltip.style.display = 'block';
+    const tx = x + 18, ty = Math.max(10, y - 20);
+    tooltip.style.left = Math.min(tx, window.innerWidth - 260) + 'px';
+    tooltip.style.top = ty + 'px';
+    const typeLabel = { root: 'Root', component: 'Komponen', edgecase: 'Edge Case', impl: 'Implementasi', tech: 'Teknologi', page: 'Halaman' }[n.type] || n.type;
+    tooltip.innerHTML = `<strong style="color:${nodeColor(n.type)};font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.04em">${n.label}</strong><br><span style="color:#3A6A9A;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-family:'Courier New',monospace">${typeLabel}</span><br><span style="display:block;margin-top:5px;font-size:11px;color:#8AAAC8">${n.desc}</span>`;
+  } else {
+    tooltip.style.display = 'none';
+  }
+});
+
+canvas.addEventListener('mousedown', e => {
+  const {x, y} = pos(e);
+  const n = getNodeAt(x, y);
+  if (n) { dragNode = n; dragOX = n.x - x; dragOY = n.y - y; canvas.style.cursor = 'grabbing'; }
+});
+canvas.addEventListener('mouseup', () => { dragNode = null; canvas.style.cursor = hoveredNode ? 'grab' : 'default'; });
+canvas.addEventListener('mouseleave', () => { hoveredNode = null; tooltip.style.display = 'none'; dragNode = null; });
+</script>
+</body>
+</html>
