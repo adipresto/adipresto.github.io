@@ -216,6 +216,7 @@
     padding: 2rem;
     scroll-snap-align: start;
     scroll-snap-stop: always;
+    overflow: hidden;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -540,9 +541,17 @@
   .slide-mempelai-pria .card-bottom,
   .slide-mempelai-wanita .card-bottom {
     flex: 1 1 0;
+    min-height: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+  }
+
+  .slide-mempelai-pria .card,
+  .slide-mempelai-wanita .card {
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .mempelai-pria-photo {
@@ -574,6 +583,32 @@
     .slide-mempelai-pria .card,
     .slide-mempelai-wanita .card {
       padding: 1.5rem 1.25rem;
+    }
+  }
+
+  /* ─── Viewport pendek (mobile landscape / HP kecil): rapatkan kartu biar muat 1/3 slide tanpa scroll ─── */
+  @media (max-height: 700px) {
+    .slide-mempelai-pria .card,
+    .slide-mempelai-wanita .card {
+      padding: 1rem 1.25rem;
+    }
+    .slide-mempelai-pria .card .label,
+    .slide-mempelai-wanita .card .label {
+      margin-bottom: 0.5rem;
+    }
+    .slide-mempelai-pria .card .guest-name,
+    .slide-mempelai-wanita .card .guest-name {
+      font-size: clamp(1.1rem, 4vw, 2rem);
+      margin-bottom: 0.5rem;
+    }
+    .slide-mempelai-pria .card .divider,
+    .slide-mempelai-wanita .card .divider {
+      margin: 0 auto 0.75rem;
+    }
+    .slide-mempelai-pria .card p,
+    .slide-mempelai-wanita .card p {
+      font-size: 0.85rem;
+      line-height: 1.4;
     }
   }
 
@@ -692,7 +727,7 @@
     max-width: 640px;
     width: 100%;
     max-height: 100%;
-    overflow-y: auto;
+    overflow: hidden;
     padding: 3rem 2rem;
     display: flex;
     flex-direction: column;
@@ -744,6 +779,55 @@
     margin-top: 1.25rem;
     max-width: 520px;
     direction: ltr;
+  }
+
+  /* ─── Viewport pendek: rapatkan ayat biar muat satu layar tanpa scroll ─── */
+  @media (max-height: 700px) {
+    .slide-ayat {
+      padding: 1rem 1.25rem;
+    }
+    .card .ayat-surah-title {
+      font-size: clamp(1.6rem, calc(3vw + 1rem), 2.5rem);
+      line-height: 1.2;
+      margin: 0 0 0.35rem;
+    }
+    .slide-ayat .card .label {
+      margin-bottom: 0.5rem;
+    }
+    .slide-ayat .card .divider {
+      margin: 0 auto 0.6rem;
+    }
+    .card .ayat-bismillah {
+      font-size: clamp(1.2rem, calc(2vw + 0.8rem), 1.8rem);
+      line-height: 1.4;
+      margin-top: 0.5rem;
+    }
+    .card .ayat-verse {
+      font-size: clamp(1rem, calc(1.4vw + 0.6rem), 1.5rem);
+      line-height: 1.4;
+      margin-top: 0.5rem;
+    }
+    .card .ayat-translation {
+      font-size: 0.75rem;
+      line-height: 1.35;
+      margin-top: 0.5rem;
+    }
+  }
+
+  @media (max-height: 560px) {
+    .card .ayat-surah-title {
+      font-size: clamp(1.2rem, calc(3vw + 0.6rem), 2rem);
+    }
+    .card .ayat-bismillah {
+      font-size: clamp(1rem, calc(2vw + 0.5rem), 1.4rem);
+    }
+    .card .ayat-verse {
+      font-size: clamp(0.85rem, calc(1.2vw + 0.5rem), 1.2rem);
+    }
+    .card .ayat-translation {
+      font-size: 0.68rem;
+      line-height: 1.25;
+    }
   }
 
   .slide-tanggal {
@@ -1041,7 +1125,47 @@
       padding: 1.75rem 1.5rem;
       max-height: calc(100vh - 4rem);
       max-height: calc(100dvh - 4rem);
-      overflow-y: auto;
+      overflow: hidden;
+    }
+  }
+
+  /* ─── Viewport pendek: rapatkan kartu resepsi biar muat satu layar tanpa scroll ─── */
+  @media (max-height: 700px) {
+    .slide-resepsi .card {
+      padding: 1rem 1.25rem;
+    }
+    .slide-resepsi .event-times .event-time .event-label {
+      margin-bottom: 0 !important;
+    }
+    .slide-resepsi .event-times .event-time .event-hour {
+      font-size: 1.1rem !important;
+    }
+    .slide-resepsi .event-times .event-time .venue {
+      font-size: 0.95rem !important;
+      margin-top: 0 !important;
+    }
+    .slide-resepsi .card .divider {
+      margin: 0.4rem auto !important;
+    }
+    .slide-resepsi .card .label {
+      font-size: 1rem;
+      margin-bottom: 0.4rem;
+    }
+    .slide-resepsi .maps-link {
+      margin-top: 0;
+      padding: 0.5rem 1.25rem;
+    }
+  }
+
+  @media (max-height: 560px) {
+    .slide-resepsi .event-times {
+      gap: 0.5rem;
+    }
+    .slide-resepsi .event-times .event-time .event-hour {
+      font-size: 1rem !important;
+    }
+    .slide-resepsi .event-times .event-time .venue {
+      font-size: 0.85rem !important;
     }
   }
 
@@ -1470,11 +1594,15 @@
 
   // ─── Foto untuk film roll ───────────────────────────────────────────────
   const photos = [
+    "components/film-roll-loop/photos/-1.jpg",
     "components/film-roll-loop/photos/0.jpg",
     "components/film-roll-loop/photos/2.jpg",
     "components/film-roll-loop/photos/3.jpg",
     "components/film-roll-loop/photos/4.JPG",
     "components/film-roll-loop/photos/5.JPG",
+    "components/film-roll-loop/photos/6.jpg",
+    "components/film-roll-loop/photos/7.jpeg",
+    "components/film-roll-loop/photos/10.png",
   ];
 
   const SECS_PER_FRAME = 16;
