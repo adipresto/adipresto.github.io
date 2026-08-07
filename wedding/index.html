@@ -558,14 +558,14 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: url('components/film-roll-loop/photos/slide-3.jpeg') center/cover no-repeat;
+    background: url('components/film-roll-loop/photos/slide-3-old.jpeg') center/cover no-repeat;
   }
 
   .mempelai-wanita-photo {
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: url('components/film-roll-loop/photos/slide-4.jpeg') center/cover no-repeat;
+    background: url('components/film-roll-loop/photos/slide-4-old.jpeg') center/cover no-repeat;
   }
 
   .mempelai-pria-photo::after,
@@ -583,6 +583,13 @@
     .slide-mempelai-pria .card,
     .slide-mempelai-wanita .card {
       padding: 1.5rem 1.25rem;
+    }
+
+    /* mobile: zoom in & geser foto ke atas supaya wajah tidak terlalu besar/terpotong */
+    .mempelai-pria-photo,
+    .mempelai-wanita-photo {
+      background-size: 260%;
+      background-position: center 15%;
     }
   }
 
@@ -650,6 +657,7 @@
       width: 50%;
       align-self: stretch;
       flex-shrink: 0;
+      background-position: center 20%;
     }
 
     .mempelai-pria-photo::after,
@@ -903,7 +911,7 @@
     color: #ffffff;
     //font-family: 'Source Serif Pro', Georgia, serif;
     font-family: 'Dream Avenue', Georgia, serif;
-    font-size: 1.15rem;
+    font-size: 1.0rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     opacity: 0;
@@ -1021,7 +1029,7 @@
   }
 
   .cal-cell--active .cal-day {
-    font-size: clamp(2.8rem, 10vw, 4.5rem);
+    font-size: clamp(3.4rem, 13vw, 5.5rem);
     color: #B8B09B;
     padding: 0 0.1em;
   }
@@ -1399,8 +1407,6 @@
   <section class="slide slide-tanggal" id="slide-3">
     <div class="tanggal-photo" aria-hidden="true"></div>
     <div class="card">
-      <p class="label" style="font-size:1.25rem;">Catat dan simpan tanggal</p>
-
       <div class="cal-month" style="font-size:1.15rem;">Agustus 2026</div>
       <div class="cal-strip" id="calStrip" aria-hidden="true">
         <div class="cal-cell" data-target-day="27" data-target-name="Kamis"><span class="cal-dayname">Kamis</span><span class="cal-day">27</span></div>
@@ -1603,6 +1609,7 @@
     "components/film-roll-loop/photos/6.jpg",
     "components/film-roll-loop/photos/7.jpeg",
     "components/film-roll-loop/photos/10.png",
+    "components/film-roll-loop/photos/11.jpg",
   ];
 
   const SECS_PER_FRAME = 16;
