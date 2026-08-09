@@ -217,6 +217,75 @@
     }
   }
 
+  /* ─── Slide Kosong (placeholder) ────────────────────────────────────── */
+  .slide-blank {
+    position: relative;
+    background: #e5e1de;
+    overflow: hidden;
+  }
+
+  .slide-blank .card {
+    position: relative;
+    z-index: 1;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+  }
+
+  .slide-blank .card p {
+    color: #550000;
+  }
+
+  .rose-decor {
+    position: absolute;
+    top: 6%;
+    left: 50%;
+    width: min(55vw, 260px);
+    height: auto;
+    z-index: 0;
+    transform: translate(-50%, -140%) rotate(-18deg);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .rose-decor--side {
+    top: -4%;
+    left: auto;
+    right: -12%;
+    width: 55vw;
+    transform: translate(0, -140%) rotate(12deg);
+  }
+
+  @media (max-width: 700px) {
+    .rose-decor--side {
+      top: auto;
+      bottom: -6%;
+      right: -8%;
+      width: 85vw;
+    }
+  }
+
+  @keyframes roseFallSide {
+    0%   { transform: translate(0, -140%) rotate(12deg); opacity: 0; }
+    60%  { opacity: 1; }
+    100% { transform: translate(0, 0) rotate(4deg); opacity: 1; }
+  }
+
+  .slide-blank.in-view .rose-decor--side {
+    animation: roseFallSide 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.2s forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rose-decor {
+      transform: none;
+      opacity: 1;
+    }
+    .slide-blank.in-view .rose-decor--side {
+      animation: none;
+    }
+  }
+
   /* ─── Slide Hero (cover): foto full-bleed, teks mengambang di atasnya ──── */
   .slide-hero {
     padding: 2rem;
@@ -594,6 +663,38 @@
       background-size: 260%;
       background-position: center 15%;
     }
+
+    /* mobile: besarkan nama mempelai pria & wanita */
+    .slide-mempelai-pria .card .guest-name,
+    .slide-mempelai-wanita .card .guest-name {
+      font-size: clamp(2.4rem, 9vw, 3.2rem);
+    }
+
+    .slide-mempelai-pria .card p,
+    .slide-mempelai-wanita .card p {
+      font-size: 1.1rem;
+    }
+
+    /* mobile: kalau teks kartu nama enggak muat di 1/3 slide, biarkan card tumbuh
+       (ambil ruang dari slide-spacer/foto) alih-alih kepotong overflow:hidden */
+    .slide-mempelai-pria .card-bottom,
+    .slide-mempelai-wanita .card-bottom {
+      flex: 0 1 auto;
+      min-height: min-content;
+      overflow: visible;
+    }
+
+    .slide-mempelai-pria .slide-spacer,
+    .slide-mempelai-wanita .slide-spacer {
+      flex: 1 1 0;
+      min-height: 0;
+    }
+
+    .slide-mempelai-pria .card,
+    .slide-mempelai-wanita .card {
+      max-height: none;
+      overflow: visible;
+    }
   }
 
   /* ─── Viewport pendek (mobile landscape / HP kecil): rapatkan kartu biar muat 1/3 slide tanpa scroll ─── */
@@ -907,7 +1008,7 @@
     align-items: center;
     gap: 0.4rem;
     margin-top: 2rem;
-    padding: 0.6rem 1.5rem;
+    padding: 1.2rem 1.5rem;
     border: 1px solid rgba(255, 152, 0, 0.6);
     border-radius: 999px;
     background: rgba(255, 152, 0, 0.08);
@@ -916,6 +1017,7 @@
     font-family: 'Dream Avenue', Georgia, serif;
     font-size: 1.25rem;
     letter-spacing: 0em;
+    line-height: 1.5;
     opacity: 0;
     transform: scale(0.75) translateY(10px);
     cursor: pointer;
@@ -977,6 +1079,13 @@
     .slide-tanggal .sparkle,
     .slide-tanggal.in-view .sparkle {
       display: none;
+    }
+  }
+
+  /* viewport pendek: samakan tinggi tombol dengan tombol "Venue Maps" di slide-resepsi */
+  @media (max-height: 700px) {
+    .slide-tanggal .save-date-btn {
+      padding: 0.8rem 1.25rem;
     }
   }
 
@@ -1136,6 +1245,11 @@
       max-height: calc(100dvh - 4rem);
       overflow: hidden;
     }
+
+    .slide-resepsi .maps-link {
+      padding: 1.2rem 1.5rem;
+    }
+
   }
 
   /* ─── Viewport pendek: rapatkan kartu resepsi biar muat satu layar tanpa scroll ─── */
@@ -1162,7 +1276,7 @@
     }
     .slide-resepsi .maps-link {
       margin-top: 0;
-      padding: 0.5rem 1.25rem;
+      padding: 1.2rem 1.25rem;
     }
   }
 
@@ -1199,6 +1313,7 @@
 
   /* ─── Link lokasi maps resepsi — meniru gaya tombol pill "Simpan Tanggal" ──── */
   .maps-link {
+    position: relative;
     display: inline-flex;
     align-items: center;
     margin-top: 0rem;
@@ -1217,6 +1332,31 @@
 
   .maps-link:active {
     background: rgba(255, 152, 0, 0.28);
+  }
+
+  /* sparkle blink — sama seperti tombol "Simpan Tanggal" di slide-tanggal */
+  .slide-resepsi .sparkle {
+    position: absolute;
+    color: #B8B09B;
+    font-size: 0.7rem;
+    opacity: 0;
+    pointer-events: none;
+    text-shadow: 0 0 4px rgba(255, 152, 0, 0.8);
+  }
+
+  .slide-resepsi .spk1 { top: -6px;  left: 6px; }
+  .slide-resepsi .spk2 { bottom: -8px; right: 18px; font-size: 0.55rem; }
+  .slide-resepsi .spk3 { top: -2px; right: -4px; font-size: 0.85rem; }
+
+  .slide-resepsi.in-view .spk1 { animation: sparkleTwinkle 1.6s ease-in-out 0.5s infinite; }
+  .slide-resepsi.in-view .spk2 { animation: sparkleTwinkle 1.6s ease-in-out 1s infinite; }
+  .slide-resepsi.in-view .spk3 { animation: sparkleTwinkle 1.6s ease-in-out 1.4s infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide-resepsi .sparkle,
+    .slide-resepsi.in-view .sparkle {
+      display: none;
+    }
   }
 
   .maps-label {
@@ -1245,6 +1385,11 @@
     color: #ffffff;
     margin-top: 0.15rem;
   }
+
+  .maps-link .qr-venue {
+    margin-top: 0;
+  }
+
 
   /* ─── Slide Galeri: film roll sebagai konten, bukan lagi background ──── */
   .slide-galeri {
@@ -1438,6 +1583,14 @@
     <p class="hero-disclaimer">Mohon maaf apabila terjadi kesalahan dalam penulisan nama.</p>
   </section>
 
+  <section class="slide slide-blank" id="slide-1">
+    <img src="assets/rose.svg" alt="" class="rose-decor rose-decor--side" aria-hidden="true">
+    <div class="card">
+      <img src="assets/title_slide2.svg" alt="" class="title-svg">
+      <p>Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud mengundang Bapak/Ibu/Saudara/Saudari untuk menghadiri acara pernikahan kami.</p>
+    </div>
+  </section>
+
   <section class="slide slide-ayat" id="slide-ayat">
     <div class="ayat-photo" aria-hidden="true"></div>
     <div class="card">
@@ -1450,7 +1603,7 @@
     </div>
   </section>
 
-  <section class="slide slide-mempelai-pria" id="slide-1">
+  <section class="slide slide-mempelai-pria" id="slide-2">
     <div class="mempelai-pria-photo" aria-hidden="true"></div>
     <div class="slide-spacer" aria-hidden="true"></div>
     <div class="card-bottom">
@@ -1463,7 +1616,7 @@
     </div>
   </section>
 
-  <section class="slide slide-mempelai-wanita" id="slide-2">
+  <section class="slide slide-mempelai-wanita" id="slide-3">
     <div class="mempelai-wanita-photo" aria-hidden="true"></div>
     <div class="slide-spacer" aria-hidden="true"></div>
     <div class="card-bottom">
@@ -1477,7 +1630,7 @@
     </div>
   </section>
 
-  <section class="slide slide-tanggal" id="slide-3">
+  <section class="slide slide-tanggal" id="slide-4">
     <div class="tanggal-photo" aria-hidden="true"></div>
     <div class="card">
       <div class="cal-month" style="">Agustus 2026</div>
@@ -1500,20 +1653,22 @@
     </div>
   </section>
 
-  <section class="slide slide-resepsi" id="slide-4">
+  <section class="slide slide-resepsi" id="slide-5">
     <div class="resepsi-photo" aria-hidden="true"></div>
     <div class="card">
       <div class="event-times">
         <img src="assets/svg_lokasi akad.svg" alt="Lokasi Akad Nikah" class="lokasi-akad-svg">
       </div>
-      <div class="divider"></div>
       <a class="maps-link" href="https://maps.app.goo.gl/qYrkhyF3yTiV7eRz6" target="_blank" rel="noopener">
+        <span class="sparkle spk1" aria-hidden="true">✦</span>
         <span class="maps-label"><span class="qr-venue">Venue Maps</span></span>
+        <span class="sparkle spk2" aria-hidden="true">✦</span>
+        <span class="sparkle spk3" aria-hidden="true">✦</span>
       </a>
     </div>
   </section>
 
-  <section class="slide slide-galeri" id="slide-5">
+  <section class="slide slide-galeri" id="slide-6">
     <p class="label">Galeri</p>
     <div class="slide-galeri-inner">
       <div class="filmroll">
@@ -1670,7 +1825,7 @@
     "components/film-roll-loop/photos/4.JPG",
     "components/film-roll-loop/photos/11.jpg",
     "components/film-roll-loop/photos/5.JPG",
-    "components/film-roll-loop/photos/12.JPG",
+    "components/film-roll-loop/photos/12.jpg",
     "components/film-roll-loop/photos/6.jpg",
     "components/film-roll-loop/photos/7.jpeg"
 
@@ -1955,6 +2110,17 @@
     });
   }
 
+  // ─── Rose jatuh saat slide-blank masuk viewport ────────────────────────
+  const blankSlide = document.querySelector(".slide-blank");
+  if (blankSlide) {
+    const blankObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        blankSlide.classList.toggle("in-view", entry.isIntersecting);
+      });
+    }, { threshold: 0.4 });
+    blankObserver.observe(blankSlide);
+  }
+
   // ─── Animasi label "Simpan Tanggal" saat slide masuk viewport ──────────
   const tanggalSlide = document.querySelector(".slide-tanggal");
   if (tanggalSlide) {
@@ -1965,6 +2131,17 @@
       });
     }, { threshold: 0.4 });
     tanggalObserver.observe(tanggalSlide);
+  }
+
+  // ─── Sparkle blink tombol "Venue Maps" saat slide resepsi masuk viewport ──
+  const resepsiSlide = document.querySelector(".slide-resepsi");
+  if (resepsiSlide) {
+    const resepsiObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        resepsiSlide.classList.toggle("in-view", entry.isIntersecting);
+      });
+    }, { threshold: 0.4 });
+    resepsiObserver.observe(resepsiSlide);
   }
 
   // ─── Simpan ke Google Calendar ───────────────────────────────────────────
@@ -2090,7 +2267,7 @@
 
   // ─── Di slide terakhir: hint berubah jadi tombol "kembali keatas" ──────
   (function() {
-    const lastSlide = document.getElementById("slide-5");
+    const lastSlide = document.getElementById("slide-6");
     const firstSlide = document.getElementById("slide-0");
     if (!lastSlide || !firstSlide || !hint) return;
 
