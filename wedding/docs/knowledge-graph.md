@@ -2,11 +2,17 @@
 
 Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar konsep (node) dan relasi antar konsep (edge).
 
-**Versi saat ini: v2.5**
+**Versi saat ini: v2.6**
 
 ---
 
 ## Changelog
+
+### v2.6 — 2026-08-09
+- Tambah node impl: `impl-lokasi-akad-svg` — SVG peta lokasi akad (`assets/svg_lokasi akad.svg`) ditambahkan ke kartu Akad Nikah di `slide-resepsi`, di bawah nama venue. Semua glyph teks (path vektor) di dalam SVG diseragamkan ke warna `#e5e1de` (sebelumnya dua warna berbeda: `#550000` dan `#492722`)
+- Update node komponen: `slide-resepsi` — deskripsi ditambah referensi ke `impl-lokasi-akad-svg`
+- Tambah edge: `slide-resepsi` → `impl-lokasi-akad-svg`
+- Total: 66 node · 83 edge
 
 ### v2.5 — 2026-08-05
 - Update node impl: `impl-loading-screen` — animasi transisi diganti dari fade menjadi slide, dengan dua jalur berbeda tergantung hasil fetch Firestore: (1) data tamu valid — seluruh loading screen slide ke atas (`translateY(-100%)`) sekaligus `.content-layer` slide masuk dari bawah (`translateY(48px)` → `0`, dibarengi fade opacity); (2) tidak ada data — logo Adi & Divetri di loading screen slide turun & lenyap (`translateY(160%)`, opacity 0) diikuti teks kredit fade-out, lalu `.gate-page` ("Mohon doa dan restu...") fade-in via class `is-visible` setelah event `transitionend` pada logo. Kedua jalur punya fallback instan (tanpa animasi) saat `prefers-reduced-motion: reduce` aktif, dicek via `matchMedia` di awal skrip
@@ -157,7 +163,7 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 | slide-mempelai-pria | Slide Mempelai Pria | Slide ketiga di `page-filmroll-demo` — foto full-bleed `photos/12.jpeg`, kartu nama mempelai pria (M. Rizky Adi Prasetyo) + nama orang tua. |
 | slide-mempelai-wanita | Slide Mempelai Wanita | Slide keempat di `page-filmroll-demo` — foto full-bleed `photos/11.jpeg`, kartu nama mempelai wanita (Divetri Ayu Rahmawati) + nama orang tua. |
 | slide-tanggal | Slide Simpan Tanggal | Slide berisi tombol pill "Simpan Tanggal" (`#saveDateBtn`) dengan sparkle berulang saat slide terlihat di viewport, plus countdown real-time (`#countdown`) menuju tanggal pernikahan. Klik tombol membuka Google Calendar dengan event terisi otomatis. |
-| slide-resepsi | Slide Resepsi | Slide kelima di `page-filmroll-demo` — foto full-bleed `photos/6.JPG` dengan overlay gelap, info waktu (11.00–14.00 WIB) dan lokasi (Grand Ballroom Hotel Mulia, Jakarta). |
+| slide-resepsi | Slide Resepsi | Slide kelima di `page-filmroll-demo` — foto full-bleed `photos/6.JPG` dengan overlay gelap, info waktu (11.00–14.00 WIB) dan lokasi (Grand Ballroom Hotel Mulia, Jakarta). Kartu Akad Nikah menampilkan SVG peta lokasi akad (`impl-lokasi-akad-svg`). |
 
 ### Halaman
 | ID | Label | Deskripsi |
@@ -216,6 +222,7 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 | impl-countdown | Countdown Pernikahan | Hitung mundur real-time (hari/jam/menit/detik) di `slide-tanggal` (`#cd-days`, `#cd-hours`, `#cd-mins`, `#cd-secs`) menuju `2026-08-29T08:00:00+07:00`, di-update tiap detik via `setInterval`. |
 | impl-guestname-fit | Auto-Shrink Nama Tamu | Fungsi JS `fitGuestName()` di `index.html`: setelah nama tamu disuntik (dari Firestore atau placeholder), font-size `.guest-name` diperkecil bertahap (step 1px, minimum 16px) selama `getBoundingClientRect().bottom` elemen melewati batas aman ~62% tinggi `.slide-hero` — bukan diukur dari tinggi kontainer flex `.hero-middle` (yang bisa menyusut/collapse dan memberi hasil ukur keliru), melainkan posisi viewport aktual wax seal. Dipanggil ulang saat `resize`. Tidak memotong teks — nama tetap wrap penuh, hanya diperkecil agar tidak menabrak stempel. |
 | impl-loading-screen | Loading Screen saat Fetch Firestore | Layar hitam (`#loadingScreen`) menutupi halaman secara default (`html.is-loading`) selama fetch async ke Firestore (`impl-guest-gate`) berlangsung, menampilkan logo Adi & Divetri di tengah beranimasi pulse (dimatikan saat `prefers-reduced-motion`), diikuti teks kredit statis "Built by Adipresto. Supervised by Dive. Powered by Dreamlabs" di bawah logo. Dua jalur reveal: (1) data tamu valid — loading screen slide ke atas keluar viewport, `.content-layer` slide masuk dari bawah; (2) tidak ada data — logo slide turun & lenyap, lalu `.gate-page` fade-in. Fallback instan tanpa animasi saat `prefers-reduced-motion` aktif. |
+| impl-lokasi-akad-svg | SVG Lokasi Akad | Gambar SVG peta lokasi akad (`assets/svg_lokasi akad.svg`, class `.lokasi-akad-svg`) ditampilkan di kartu Akad Nikah pada `slide-resepsi`, di bawah nama venue (Kantor KUA Welahan). Semua glyph teks di dalam SVG (path vektor, bukan elemen `<text>`) memakai warna solid `#e5e1de` — dua warna asli (`#550000` untuk judul, `#492722` untuk isi) diseragamkan jadi satu warna ini. |
 
 ### Teknologi / API
 | ID | Label | Deskripsi |
@@ -316,6 +323,7 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 - `page-filmroll-demo` → `impl-guest-gate`
 - `page-filmroll-demo` → `impl-loading-screen`
 - `impl-guest-gate` → `impl-loading-screen`
+- `slide-resepsi` → `impl-lokasi-akad-svg`
 
 ### Film Roll Loop → Implementasi Baru
 - `film-roll` → `impl-film-filter`

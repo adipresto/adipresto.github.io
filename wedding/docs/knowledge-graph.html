@@ -125,11 +125,11 @@ canvas { display: block; }
 <div id="hdr">
   <h1>Undangan Online — Knowledge Graph</h1>
   <p>docs/requirements.md · docs/filmrollloop-requirements.md</p>
-  <span class="version">v2.5 · 2026-08-05</span>
+  <span class="version">v2.6 · 2026-08-09</span>
 </div>
 
 <div id="stats">
-  65 nodes · 82 edges
+  66 nodes · 83 edges
 </div>
 
 <canvas id="g"></canvas>
@@ -234,6 +234,7 @@ const nodes = [
   { id: 'ec-guestname-overflow', label: 'Nama Tamu Menabrak Wax Seal', type: 'edgecase', r: 11, desc: 'Nama tamu panjang di .slide-hero .guest-name bisa wrap dan menabrak wax seal (background assets/amplome-cropped.png), karena posisi stempel fixed relatif ke viewport, bukan mengikuti tinggi konten kartu.' },
   { id: 'impl-guestname-fit', label: 'Auto-Shrink Nama Tamu', type: 'impl', r: 12, desc: 'Fungsi JS fitGuestName() memperkecil font-size nama tamu bertahap (berdasarkan getBoundingClientRect().bottom vs batas aman viewport) sampai tidak menabrak wax seal, tanpa memotong teks. Dipanggil ulang saat resize. Solusi: ec-guestname-overflow.' },
   { id: 'impl-loading-screen', label: 'Loading Screen Fetch Firestore', type: 'impl', r: 12, desc: 'Layar hitam (#loadingScreen) menutupi halaman default (html.is-loading) selama fetch async Firestore berlangsung, menampilkan logo Adi & Divetri di tengah beranimasi pulse (mati saat prefers-reduced-motion), diikuti teks kredit "Built by Adipresto. Supervised by Dive. Powered by Dreamlabs". Dua jalur reveal: data valid -> loading screen slide ke atas + content-layer slide masuk dari bawah; tidak ada data -> logo slide turun & lenyap lalu gate-page fade-in. Fallback instan saat prefers-reduced-motion.' },
+  { id: 'impl-lokasi-akad-svg', label: 'SVG Lokasi Akad', type: 'impl', r: 12, desc: 'Gambar SVG peta lokasi akad (assets/svg_lokasi akad.svg, class .lokasi-akad-svg) ditampilkan di kartu Akad Nikah pada slide-resepsi, di bawah nama venue. Semua glyph teks (path vektor) di dalam SVG diseragamkan ke warna solid #e5e1de (sebelumnya #550000 dan #492722).' },
 ];
 
 const edges = [
@@ -297,6 +298,7 @@ const edges = [
   ['slide-tanggal','impl-save-gcal'],
   ['page-filmroll-demo','impl-loading-screen'],
   ['impl-guest-gate','impl-loading-screen'],
+  ['slide-resepsi','impl-lokasi-akad-svg'],
 ];
 
 const nodeMap = {};
