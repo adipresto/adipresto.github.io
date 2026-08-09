@@ -40,6 +40,9 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     cursor: grab;
+    /* geser horizontal ditangani penuh oleh JS (bukan native scroll) supaya tidak bentrok
+       dengan snap/loop — browser cuma boleh handle pan vertikal (scroll halaman) */
+    touch-action: pan-y;
   }
 
   .filmroll.is-dragging {
@@ -161,17 +164,6 @@
 
   @media (prefers-reduced-motion: reduce) {
     .galeri-nav { display: none; }
-  }
-
-  /* ─── Mobile: swipe berhenti pas foto di tengah frame ───────────────── */
-  @media (max-width: 768px) {
-    .filmroll {
-      scroll-snap-type: x mandatory;
-    }
-    .frame {
-      scroll-snap-align: center;
-      scroll-snap-stop: always;
-    }
   }
 
   /* ─── prefers-reduced-motion: matikan autoplay, sisakan scroll manual ───────────────────── */
@@ -506,6 +498,17 @@
   /* nama tamu undangan di hero dibesarkan supaya lebih menonjol dari logo */
   .hero-card .hero-middle .guest-name {
     font-size: clamp(2.2rem, 7vw, 3.2rem);
+  }
+
+  /* mobile: logo Adi & Divetri dikecilin, nama tamu dibesarkan supaya lebih menonjol */
+  @media (max-width: 700px) {
+    .hero-card .title-svg {
+      max-width: 200px;
+    }
+
+    .hero-card .hero-middle .guest-name {
+      font-size: clamp(2.6rem, 10vw, 3.6rem);
+    }
   }
 
   .card .date {
@@ -1771,11 +1774,19 @@
     let touchStartScroll = 0;
     let touching = false;
 
+    // drag manual penuh (mirip mouse drag di desktop) — bukan andalkan native touch-scroll,
+    // supaya posisi scrollLeft yang JS pegang selalu akurat & konsisten dengan logic loop/snap
     filmroll.addEventListener("touchstart", (e) => {
       if (slideAnim) cancelAnimationFrame(slideAnim);
       touching = true;
       touchStartX = e.touches[0].clientX;
       touchStartScroll = filmroll.scrollLeft;
+    }, { passive: true });
+
+    filmroll.addEventListener("touchmove", (e) => {
+      if (!touching) return;
+      const x = e.touches[0].clientX;
+      filmroll.scrollLeft = touchStartScroll - (x - touchStartX);
     }, { passive: true });
 
     filmroll.addEventListener("touchend", (e) => {
@@ -1784,6 +1795,10 @@
       const t = e.changedTouches && e.changedTouches[0];
       const endX = t ? t.clientX : touchStartX;
       snapAfterDrag(touchStartScroll, touchStartX - endX); // positif = geser ke kiri (maju)
+    }, { passive: true });
+
+    filmroll.addEventListener("touchcancel", () => {
+      touching = false;
     }, { passive: true });
   })();
 
@@ -1795,9 +1810,6 @@
     let paused = false;
     let resumeTimer = null;
     let lastTs = null;
-
-    // mulai dari tengah set foto biar bisa langsung geser mundur (ke kanan) tanpa nabrak 0
-    filmroll.scrollLeft = halfWidth;
 
     function pauseAutoplay() {
       paused = true;
@@ -1813,10 +1825,9 @@
       if (!paused) {
         if (lastTs !== null) {
           const dt = (ts - lastTs) / 1000;
-          // kurangi scrollLeft supaya frame-frame kelihatan berjalan ke kanan
-          filmroll.scrollLeft -= pxPerSec * dt;
-          if (filmroll.scrollLeft <= 0) {
-            filmroll.scrollLeft += halfWidth;
+          filmroll.scrollLeft += pxPerSec * dt;
+          if (filmroll.scrollLeft >= halfWidth) {
+            filmroll.scrollLeft -= halfWidth;
           }
         }
         lastTs = ts;
