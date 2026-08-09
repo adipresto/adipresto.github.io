@@ -334,8 +334,8 @@
   }
 
   .title-svg {
-    max-width: 240px;
-    width: 95%;
+    max-width: 300px;
+    width: 100%;
     height: auto;
     margin-bottom: 0.5rem;
     align-self: center;
@@ -490,14 +490,14 @@
 
   .card p {
     font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 1rem;
+    font-size: clamp(1rem, 2.2vw, 1.15rem);
     line-height: 1.75;
     color: rgba(184, 176, 155, 0.63);
   }
 
   .card .guest-name {
     font-family: 'Dream Avenue', Georgia, serif;
-    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
     font-weight: 400;
     color: #B8B09B;
     margin-bottom: 1rem;
@@ -605,7 +605,7 @@
     }
     .slide-mempelai-pria .card .guest-name,
     .slide-mempelai-wanita .card .guest-name {
-      font-size: clamp(1.1rem, 4vw, 2rem);
+      font-size: clamp(1.3rem, 4.5vw, 2.2rem);
       margin-bottom: 0.5rem;
     }
     .slide-mempelai-pria .card .divider,
@@ -614,7 +614,7 @@
     }
     .slide-mempelai-pria .card p,
     .slide-mempelai-wanita .card p {
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       line-height: 1.4;
     }
   }
@@ -911,9 +911,8 @@
     color: #ffffff;
     //font-family: 'Source Serif Pro', Georgia, serif;
     font-family: 'Dream Avenue', Georgia, serif;
-    font-size: 1.0rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    font-size: 1.25rem;
+    letter-spacing: 0em;
     opacity: 0;
     transform: scale(0.75) translateY(10px);
     cursor: pointer;
@@ -980,10 +979,9 @@
 
   /* ─── 1. Potongan kalender: bulan Agustus 2026, tanggal 29 disorot, sekitarnya diburamkan ──── */
   .cal-month {
-    font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.9rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-size: 2.5rem;
+    letter-spacing: 0em;
     color: rgba(184, 176, 155, 0.63);
     margin-bottom: 0.9rem;
   }
@@ -1045,7 +1043,7 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
   }
 
   .event-time .event-label {
@@ -1184,27 +1182,45 @@
     color: rgba(255, 255, 255, 0.63);
   }
 
-  /* ─── Link lokasi maps resepsi ──── */
+  .event-time:has(.lokasi-akad-svg) {
+    align-self: stretch;
+  }
+
+  .lokasi-akad-svg {
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    margin: 0.5rem -2.5rem 0;
+  }
+
+  /* ─── Link lokasi maps resepsi — meniru gaya tombol pill "Simpan Tanggal" ──── */
   .maps-link {
     display: inline-flex;
+    align-items: center;
     margin-top: 0rem;
-    padding: 0.85rem 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 0.6rem 1.5rem;
+    border: 1px solid rgba(255, 152, 0, 0.6);
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 152, 0, 0.08);
     text-decoration: none;
     transition: background 0.2s ease;
   }
 
   .maps-link:hover,
   .maps-link:focus-visible {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 152, 0, 0.18);
+  }
+
+  .maps-link:active {
+    background: rgba(255, 152, 0, 0.28);
   }
 
   .maps-label {
-    font-family: 'Source Serif Pro', Georgia, serif;
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Dream Avenue', Georgia, serif;
+    font-size: 1.25rem;
+    letter-spacing: 0em;
+    color: #ffffff;
     text-align: center;
     line-height: 1.5;
   }
@@ -1339,9 +1355,63 @@
   .content-layer {
     cursor: pointer;
   }
+
+  /* ─── Tombol mute/unmute musik latar — posisi statis pojok kanan atas ── */
+  .music-toggle-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 500;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: background 0.2s ease;
+  }
+
+  .music-toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .music-toggle-btn svg {
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+  }
+
+  .music-toggle-btn .icon-muted { display: none; }
+  .music-toggle-btn.is-muted .icon-unmuted { display: none; }
+  .music-toggle-btn.is-muted .icon-muted { display: block; }
+
+  html.gate-blocked .music-toggle-btn {
+    display: none;
+  }
 </style>
 </head>
 <body>
+
+<!-- ─── Musik latar — streaming langsung dari file, autoplay muted lalu di-unmute lewat interaksi user ── -->
+<audio id="bgMusic" src="assets/kuntoajiakustik.mp3" loop muted preload="auto" playsinline></audio>
+<button type="button" id="musicToggleBtn" class="music-toggle-btn is-muted" aria-label="Aktifkan musik" aria-pressed="false">
+  <svg class="icon-unmuted" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M3 9v6h4l5 5V4L7 9H3z"/>
+    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+    <path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+  </svg>
+  <svg class="icon-muted" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M3 9v6h4l5 5V4L7 9H3z"/>
+    <path d="M19 12l3-3-1.41-1.41L17.59 10.59 15.17 8.17 13.76 9.59 16.17 12l-2.41 2.41 1.41 1.41 2.42-2.42 2.42 2.42L21 14.41 19 12z"/>
+  </svg>
+</button>
 
 <!-- ─── Content slides ───────────────────────────────────────────────────── -->
 <main class="content-layer">
@@ -1407,7 +1477,7 @@
   <section class="slide slide-tanggal" id="slide-3">
     <div class="tanggal-photo" aria-hidden="true"></div>
     <div class="card">
-      <div class="cal-month" style="font-size:1.15rem;">Agustus 2026</div>
+      <div class="cal-month" style="">Agustus 2026</div>
       <div class="cal-strip" id="calStrip" aria-hidden="true">
         <div class="cal-cell" data-target-day="27" data-target-name="Kamis"><span class="cal-dayname">Kamis</span><span class="cal-day">27</span></div>
         <div class="cal-cell" data-target-day="28" data-target-name="Jumat"><span class="cal-dayname">Jumat</span><span class="cal-day">28</span></div>
@@ -1423,7 +1493,7 @@
         <div class="cd-item"><span class="cd-num" id="cd-mins">00</span><span class="cd-label">Menit</span></div>
         <div class="cd-item"><span class="cd-num" id="cd-secs">00</span><span class="cd-label">Detik</span></div>
       </div>
-      <button type="button" class="save-date-btn" id="saveDateBtn"><span class="sparkle spk1" aria-hidden="true">✦</span>Simpan Tanggal<span class="sparkle spk2" aria-hidden="true">✦</span><span class="sparkle spk3" aria-hidden="true">✦</span></button>
+      <button type="button" class="save-date-btn" id="saveDateBtn"><span class="sparkle spk1" aria-hidden="true">✦</span>Save the Date<span class="sparkle spk2" aria-hidden="true">✦</span><span class="sparkle spk3" aria-hidden="true">✦</span></button>
     </div>
   </section>
 
@@ -1431,22 +1501,12 @@
     <div class="resepsi-photo" aria-hidden="true"></div>
     <div class="card">
       <div class="event-times">
-        <div class="event-time">
-          <p class="event-label" style="margin-bottom:0;">Akad Nikah</p>
-          <p class="event-hour" style="font-size:1.40rem;">08.00 – 09.00 WIB</p>
-          <p class="venue" style="font-size:1.25rem; margin-top:0;">Kantor KUA Welahan</p>
-        </div>
-        <div class="divider" style="margin-bottom:0;"></div>
-        <div class="event-time">
-          <p class="event-label" style="margin-bottom:0;">Resepsi</p>
-          <p class="event-hour" style="font-size:1.40rem;">13.00 – 21.00 WIB</p>
-          <p class="venue" style="font-size:1.25rem;margin-top:0;">Kediaman Mempelai Wanita</p>
-        </div>
+        <img src="assets/svg_lokasi akad.svg" alt="Lokasi Akad Nikah" class="lokasi-akad-svg">
       </div>
-        <div class="divider"></div>
+      <div class="divider"></div>
       <p class="label">Lokasi Resepsi</p>
       <a class="maps-link" href="https://maps.app.goo.gl/qYrkhyF3yTiV7eRz6" target="_blank" rel="noopener">
-        <span class="maps-label"><span class="qr-venue">Rumah Mempelai Wanita</span></span>
+        <span class="maps-label"><span class="qr-venue">Venue Maps</span></span>
       </a>
     </div>
   </section>
@@ -1600,16 +1660,18 @@
 
   // ─── Foto untuk film roll ───────────────────────────────────────────────
   const photos = [
+    "components/film-roll-loop/photos/10.png",
     "components/film-roll-loop/photos/-1.jpg",
-    "components/film-roll-loop/photos/0.jpg",
     "components/film-roll-loop/photos/2.jpg",
+    "components/film-roll-loop/photos/0.jpg",
     "components/film-roll-loop/photos/3.jpg",
     "components/film-roll-loop/photos/4.JPG",
-    "components/film-roll-loop/photos/5.JPG",
-    "components/film-roll-loop/photos/6.jpg",
-    "components/film-roll-loop/photos/7.jpeg",
-    "components/film-roll-loop/photos/10.png",
     "components/film-roll-loop/photos/11.jpg",
+    "components/film-roll-loop/photos/5.JPG",
+    "components/film-roll-loop/photos/12.jpg",
+    "components/film-roll-loop/photos/6.jpg",
+    "components/film-roll-loop/photos/7.jpeg"
+
   ];
 
   const SECS_PER_FRAME = 16;
@@ -1655,7 +1717,42 @@
     return f ? f.getBoundingClientRect().width + 12 : 176; // lebar frame + margin kiri-kanan
   };
 
+  // track berisi set foto 2x (asli + duplikat) supaya loop mulus; halfWidth = panjang satu set
+  const halfWidth = track.scrollWidth / 2;
+
   const SWIPE_THRESHOLD = 12; // px — geser sedikit saja sudah cukup untuk pindah satu frame
+
+  // animasi geser sendiri (bukan andalkan native scroll-behavior:smooth yang suka beda-beda
+  // hasilnya antar browser) — biar transisi antar frame kelihatan slide yang mulus & konsisten
+  let slideAnim = null;
+  function animateScrollTo(targetLeft, duration = 320) {
+    if (slideAnim) cancelAnimationFrame(slideAnim);
+    const startLeft = filmroll.scrollLeft;
+    const change = targetLeft - startLeft;
+    const startTime = performance.now();
+
+    function step(now) {
+      const t = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic: cepat di awal, melambat di akhir
+      filmroll.scrollLeft = startLeft + change * eased;
+      slideAnim = t < 1 ? requestAnimationFrame(step) : null;
+    }
+    slideAnim = requestAnimationFrame(step);
+  }
+
+  // scroll (dengan animasi slide) ke posisi target; kalau target keluar dari rentang satu set foto,
+  // teleport instan ±halfWidth dulu ke set duplikat (identik) biar loop-nya tak pernah mentok
+  // di ujung — dari frame terakhir bisa lanjut ke frame pertama, dan sebaliknya.
+  function scrollToFrame(targetLeft) {
+    if (targetLeft < 0) {
+      filmroll.scrollLeft += halfWidth;
+      targetLeft += halfWidth;
+    } else if (targetLeft >= halfWidth) {
+      filmroll.scrollLeft -= halfWidth;
+      targetLeft -= halfWidth;
+    }
+    animateScrollTo(targetLeft);
+  }
 
   // geser sedikit dari posisi awal (startScroll) langsung "commit" ke frame berikutnya/sebelumnya
   function snapAfterDrag(startScroll, delta) {
@@ -1664,7 +1761,8 @@
     let targetIndex = startIndex;
     if (delta > SWIPE_THRESHOLD) targetIndex = startIndex + 1;
     else if (delta < -SWIPE_THRESHOLD) targetIndex = startIndex - 1;
-    filmroll.scrollTo({ left: Math.max(0, targetIndex * step), behavior: "smooth" });
+
+    scrollToFrame(targetIndex * step);
   }
 
   // ─── Swipe kecil pun langsung pindah 1 frame (persis seperti slide vertikal) — mobile ──
@@ -1674,6 +1772,7 @@
     let touching = false;
 
     filmroll.addEventListener("touchstart", (e) => {
+      if (slideAnim) cancelAnimationFrame(slideAnim);
       touching = true;
       touchStartX = e.touches[0].clientX;
       touchStartScroll = filmroll.scrollLeft;
@@ -1692,11 +1791,13 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (!reduceMotion) {
-    const halfWidth = track.scrollWidth / 2;
     const pxPerSec = halfWidth / (expanded.length * SECS_PER_FRAME);
     let paused = false;
     let resumeTimer = null;
     let lastTs = null;
+
+    // mulai dari tengah set foto biar bisa langsung geser mundur (ke kanan) tanpa nabrak 0
+    filmroll.scrollLeft = halfWidth;
 
     function pauseAutoplay() {
       paused = true;
@@ -1712,9 +1813,10 @@
       if (!paused) {
         if (lastTs !== null) {
           const dt = (ts - lastTs) / 1000;
-          filmroll.scrollLeft += pxPerSec * dt;
-          if (filmroll.scrollLeft >= halfWidth) {
-            filmroll.scrollLeft -= halfWidth;
+          // kurangi scrollLeft supaya frame-frame kelihatan berjalan ke kanan
+          filmroll.scrollLeft -= pxPerSec * dt;
+          if (filmroll.scrollLeft <= 0) {
+            filmroll.scrollLeft += halfWidth;
           }
         }
         lastTs = ts;
@@ -1736,6 +1838,7 @@
     let dragStartScroll = 0;
 
     filmroll.addEventListener("mousedown", (e) => {
+      if (slideAnim) cancelAnimationFrame(slideAnim);
       isDragging = true;
       pauseAutoplay();
       filmroll.classList.add("is-dragging");
@@ -1760,12 +1863,12 @@
     // tombol < > geser satu frame, lalu jeda autoplay sebentar
     document.getElementById("galeriPrev")?.addEventListener("click", () => {
       pauseAutoplay();
-      filmroll.scrollBy({ left: -frameStep(), behavior: "smooth" });
+      scrollToFrame(filmroll.scrollLeft - frameStep());
       scheduleResume(1200);
     });
     document.getElementById("galeriNext")?.addEventListener("click", () => {
       pauseAutoplay();
-      filmroll.scrollBy({ left: frameStep(), behavior: "smooth" });
+      scrollToFrame(filmroll.scrollLeft + frameStep());
       scheduleResume(1200);
     });
   } else {
@@ -2011,6 +2114,36 @@
       track.classList.remove("is-paused");
     }
   });
+
+  // ─── Musik latar — play/pause & mute lewat elemen <audio> streaming ───
+  (function() {
+    const music = document.getElementById("bgMusic");
+    const musicBtn = document.getElementById("musicToggleBtn");
+    if (!music || !musicBtn) return;
+
+    // Autoplay browser hanya izinkan audio muted tanpa gesture user;
+    // begitu di-mulai, buffer yang sudah terdownload langsung ikut diputar.
+    music.play().catch(() => {});
+
+    function toggleMusicMute() {
+      const nextMuted = !music.muted;
+      music.muted = nextMuted;
+      musicBtn.classList.toggle("is-muted", nextMuted);
+      musicBtn.setAttribute("aria-pressed", String(!nextMuted));
+      musicBtn.setAttribute("aria-label", nextMuted ? "Aktifkan musik" : "Matikan musik");
+      if (!nextMuted) music.play().catch(() => {});
+    }
+
+    musicBtn.addEventListener("click", toggleMusicMute);
+
+    // Shortcut desktop: Ctrl+M untuk mute/unmute musik
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "m" || e.key === "M")) {
+        e.preventDefault();
+        toggleMusicMute();
+      }
+    });
+  })();
 </script>
 
 </body>
