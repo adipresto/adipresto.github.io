@@ -1,10 +1,10 @@
 # Ringkasan Docs
 
-Ringkasan ini digenerate dari `docs/knowledge-graph.md` (v2.5) — dokumen itu adalah satu-satunya sumber requirements proyek. Update ringkasan ini setiap kali knowledge graph berubah.
+Ringkasan ini digenerate dari `docs/knowledge-graph.md` (v2.22) — dokumen itu adalah satu-satunya sumber requirements proyek. Update ringkasan ini setiap kali knowledge graph berubah.
 
 ## Permintaan Utama
 
-Halaman undangan (`index.html`, entry point di root project) berisi beberapa slide presentasi yang bergeser saat scroll: Hero/cover, Akad Nikah, Resepsi, dan Galeri. Video kompilasi ringan sempat direncanakan sebagai latar belakang fixed, namun pendekatan itu sudah digantikan oleh film roll loop sebagai konten (bukan lagi background) di slide Galeri.
+Halaman undangan (`index.html`, entry point di root project) berisi beberapa slide presentasi yang bergeser saat scroll: Hero/cover, Ayat, Ucapan Terima Kasih (blank), Mempelai Pria, Mempelai Wanita, Simpan Tanggal, Resepsi/Akad, Tanda Kasih, dan Galeri. Slide Tanda Kasih (background foto `11.jpg` full-bleed dengan overlay gelap) berisi satu kartu dengan judul "Tanda Kasih", paragraf ajakan memberi hadiah, alamat penerima aktual ("Pondok Ungu Permai Blok D 13 No 23, Kaliabang Tengah, Bekasi Utara 17125") dengan tombol salin ke clipboard, dan dua rekening bank — Jago (`102099208975`, ikon `assets/jago-logo.svg`) dan BCA (`5221698607`, ikon `assets/Logo_BCA_Biru.png`), keduanya a.n. Muhammad Rizky Adi Prasetyo — masing-masing juga dengan tombol salin, disisipkan setelah slide Resepsi/Akad. Video kompilasi ringan sempat direncanakan sebagai latar belakang fixed, namun pendekatan itu sudah digantikan oleh film roll loop sebagai konten (bukan lagi background) di slide Galeri.
 
 ---
 

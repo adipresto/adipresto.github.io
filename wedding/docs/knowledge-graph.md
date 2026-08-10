@@ -2,11 +2,93 @@
 
 Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar konsep (node) dan relasi antar konsep (edge).
 
-**Versi saat ini: v2.6**
+**Versi saat ini: v2.23**
 
 ---
 
 ## Changelog
+
+### v2.23 — 2026-08-10
+- Update node komponen: `slide-hadiah` — teks "a.n. Muhammad Rizky Adi Prasetyo" yang sebelumnya diulang di dalam masing-masing tombol rekening (`.bank-owner`) dipindah jadi satu baris `<p class="bank-owner">` di bawah kedua tombol Jago & BCA, karena isinya sama untuk keduanya
+- Total: 70 node · 87 edge
+
+### v2.22 — 2026-08-10
+- Update node komponen: `slide-hadiah` — baris nomor rekening placeholder diganti dua tombol salin rekening aktual (`.copy-btn--bank`): Bank Jago (`102099208975`, ikon `assets/jago-logo.svg`) dan BCA (`5221698607`, ikon `assets/Logo_BCA_Biru.png`), keduanya a.n. Muhammad Rizky Adi Prasetyo
+- Update node impl: `impl-copy-address` — deskripsi diperluas, kini menjelaskan handler `.copy-btn` bersifat generik (`document.querySelectorAll(".copy-btn")`) dipakai ulang untuk tiga tombol salin di `slide-hadiah`: alamat (`#copyAddressBtn`), rekening Jago (`#copyJagoBtn`), dan rekening BCA (`#copyBcaBtn`)
+- Total: 70 node · 87 edge
+
+### v2.21 — 2026-08-10
+- Tambah node impl: `impl-copy-address` — alamat penerima hadiah di `slide-hadiah` diisi data aktual ("Pondok Ungu Permai Blok D 13 No 23, Kaliabang Tengah, Bekasi Utara 17125") dan dibungkus tombol salin (`#copyAddressBtn`, class `.copy-btn`). Klik memanggil `navigator.clipboard.writeText()` dengan fallback `document.execCommand("copy")` via `<textarea>` sementara jika Clipboard API gagal/diblokir. Ikon tombol dan class `.is-copied` berubah warna sesaat (1.8 detik) sebagai feedback visual sukses salin
+- Update node komponen: `slide-hadiah` — deskripsi ditambah referensi ke `impl-copy-address`
+- Tambah edge: `slide-hadiah` → `impl-copy-address`
+- Total: 70 node · 87 edge
+
+### v2.20 — 2026-08-10
+- Update node komponen: `slide-hadiah` — direvisi dari dua kartu berdampingan menjadi satu kartu tunggal berjudul "Tanda Kasih" (font Dream Avenue tanpa `letter-spacing`), diikuti paragraf deskripsi (font Source Serif Pro: "Doa restu yang kami terima sangat berarti, namun jika memberi berupa tanda kasih, tentunya semakin melengkapi kebahagiaan kami"), lalu baris alamat dan nomor rekening (masih placeholder). Background slide diganti foto `components/film-roll-loop/photos/11.jpg` (`.hadiah-photo`, full-bleed + overlay gelap `rgba(0,0,0,0.4)`), pola sama seperti `slide-resepsi`/`slide-akad` (bukan lagi background polos gelap)
+- Total: 69 node · 86 edge
+
+### v2.19 — 2026-08-10
+- Tambah node komponen: `slide-hadiah` — slide baru di `index.html` (`id="slide-6"`), disisipkan setelah `slide-resepsi` sebelum `slide-galeri`. Berisi dua kartu berdampingan (grid 2 kolom, stack 1 kolom di layar <700px): kartu "Nomor Rekening" dan kartu "Alamat Penerima" (untuk hadiah berupa barang). Data masih placeholder (`___`), menunggu isian aktual dari user
+- Update id slide di `index.html` — `slide-galeri` `slide-6`→`slide-7`. Referensi `lastSlide` di skrip navigasi "kembali ke atas" ikut diupdate ke `slide-7`
+- Update node halaman: `page-filmroll-demo` — urutan slide aktual: Hero → Ayat → Blank → Mempelai Pria → Mempelai Wanita → Tanggal → Resepsi → Kirim Hadiah → Galeri
+- Tambah edge: `page-filmroll-demo` → `slide-hadiah`
+- Total: 69 node · 86 edge
+
+### v2.18 — 2026-08-10
+- Update node impl: `impl-rose-fall` — posisi rose samping di mobile dipindah dari pojok kanan bawah (`bottom: -6%`) ke pojok kanan atas (`top: -6%`), lebar tetap `85vw`. Arah jatuh (keyframe `roseFallSide`, dari atas) kini konsisten dengan posisi mendaratnya
+- Total: 68 node · 85 edge
+
+### v2.17 — 2026-08-10
+- Tukar posisi `slide-blank` (Ucapan Terima Kasih) dengan `slide-ayat` (Surah Ar-Rum) di `index.html` — urutan slide kini Hero → Ayat → Blank → Mempelai Pria → dst. Id slide ikut ditukar: `slide-ayat` sekarang `id="slide-1"`, `slide-blank` sekarang `id="slide-ayat"` (class tetap sesuai konten masing-masing, hanya atribut `id` yang tertukar)
+- Update node komponen: `slide-blank` dan `slide-ayat` — urutan posisi diperbarui (slide-ayat jadi slide kedua, slide-blank jadi slide ketiga)
+- Update node halaman: `page-filmroll-demo` — urutan slide aktual: Hero → Ayat → Blank → Mempelai Pria → Mempelai Wanita → Tanggal → Resepsi → Galeri
+- Total: 68 node · 85 edge
+
+### v2.16 — 2026-08-09
+- Update node impl: `impl-rose-fall` — rose tengah (`.rose-decor` polos, `@keyframes roseFall`) dihapus dari `slide-blank`. Hanya tersisa rose samping (`.rose-decor--side`) dengan animasi jatuh `roseFallSide`. Class dasar `.rose-decor` tetap dipertahankan sebagai base style bersama (position, opacity, z-index) yang dipakai `.rose-decor--side`
+- Total: 68 node · 85 edge
+
+### v2.15 — 2026-08-09
+- Update node impl: `impl-rose-fall` — ukuran rose samping di mobile diperbesar dari `50vw` ke `85vw`. Arah animasi jatuh di mobile dikembalikan dari atas (keyframe `roseFallSideMobile` yang jatuh dari bawah dihapus) — cukup pakai `roseFallSide` yang sama dengan desktop, karena posisi mendarat tetap ditentukan oleh anchor `bottom: -6%; right: -8%` di CSS, bukan oleh arah keyframe-nya
+- Total: 68 node · 85 edge
+
+### v2.14 — 2026-08-09
+- Update node impl: `impl-rose-fall` — tambah override mobile (`@media max-width: 700px`, breakpoint sama dengan seluruh halaman) untuk `.rose-decor--side`: posisi dipindah ke pojok kanan bawah (`bottom: -6%; right: -8%`, sebelumnya `top`/kanan-atas). Ukuran & arah jatuh mobile direvisi lebih lanjut di v2.15
+- Total: 68 node · 85 edge
+
+### v2.13 — 2026-08-09
+- Update node komponen: `slide-blank` — background diganti dari foto `assets/bg_only.jpg` menjadi warna solid `#e5e1de`
+- Update node impl: `impl-rose-fall` — tambah rose kedua di samping (`.rose-decor--side`), ukuran besar (`width: 55vw`, menempel di tepi kanan lewat `right: -12%`), animasi jatuh terpisah (`@keyframes roseFallSide`) dengan delay 0.2s dari rose tengah supaya jatuhnya bertahap. `.slide-blank .card` diberi `position: relative; z-index: 1` supaya teks tetap di atas kedua rose
+- Total: 68 node · 85 edge
+
+### v2.12 — 2026-08-09
+- Tambah node impl: `impl-rose-fall` — gambar SVG dekoratif (`assets/rose.svg`, class `.rose-decor`) di `slide-blank`, animasi jatuh (`@keyframes roseFall`: translateY + rotate + fade-in) dipicu `IntersectionObserver` saat slide masuk viewport (toggle class `.in-view` di `.slide-blank`, threshold 0.4, pola sama dengan `slide-tanggal`/`slide-resepsi`). Lebar dibatasi `min(55vw, 260px)` dengan `height: auto` agar rasio SVG asli terjaga (menempel pas ke gambar, tidak stretch). SVG sendiri tidak punya elemen background terpisah — dua `<rect>` di dalamnya murni dipakai sebagai `clipPath` (tidak dirender), jadi tidak perlu diedit. Fallback instan (tanpa animasi, langsung tampil) saat `prefers-reduced-motion` aktif
+- Update node komponen: `slide-blank` — deskripsi ditambah referensi ke `impl-rose-fall`
+- Tambah edge: `slide-blank` → `impl-rose-fall`
+- Total: 68 node · 85 edge
+
+### v2.11 — 2026-08-09
+- Update node komponen: `slide-blank` — tambah dua paragraf teks undangan di bawah judul SVG dalam `.card` ("Dengan memohon rahmat dan ridho Allah SWT..." dan "Merupakan kehormatan dan kebahagiaan bagi kami..."), warna teks `#550000` (`.slide-blank .card p`) selaras dengan warna glyph judul SVG
+- Total: 67 node · 84 edge
+
+### v2.10 — 2026-08-09
+- Update node komponen: `slide-blank` — `.card` diberi override `.slide-blank .card` (background none, backdrop-filter none, border none) jadi transparan, menggantikan gaya frosted glass generik. Glyph teks SVG (`assets/title_slide2.svg`) dikembalikan ke warna `#550000` (sebelumnya sempat diputihkan ke `#ffffff`)
+- Total: 67 node · 84 edge
+
+### v2.9 — 2026-08-09
+- Update node komponen: `slide-blank` — kini punya judul gambar SVG (`assets/title_slide2.svg`, class `.title-svg`) di dalam `.card` generik (frosted glass), menggantikan slide kosong tanpa konten. Semua glyph teks (path vektor) di dalam SVG diseragamkan dari `#550000` menjadi putih (`#ffffff`)
+- Total: 67 node · 84 edge
+
+### v2.8 — 2026-08-09
+- Update node komponen: `slide-blank` — kini punya background foto `assets/bg_only.jpg` (`center/cover no-repeat`) via CSS `.slide-blank`, sebelumnya kosong tanpa styling
+- Total: 67 node · 84 edge
+
+### v2.7 — 2026-08-09
+- Tambah node komponen: `slide-blank` — slide kosong placeholder (`id="slide-1"`) disisipkan di `index.html` setelah `slide-hero`, sebelum `slide-ayat`. Belum ada konten, menunggu keputusan isi
+- Update id slide di `index.html` — semua id numerik digeser satu langkah untuk mengakomodasi `slide-blank`: `slide-mempelai-pria` `slide-1`→`slide-2`, `slide-mempelai-wanita` `slide-2`→`slide-3`, `slide-tanggal` `slide-3`→`slide-4`, `slide-resepsi` `slide-4`→`slide-5`, `slide-galeri` `slide-5`→`slide-6`. Referensi `lastSlide` di skrip navigasi "kembali ke atas" ikut diupdate ke `slide-6`
+- Update node halaman: `page-filmroll-demo` — urutan slide aktual: Hero → Blank → Ayat → Mempelai Pria → Mempelai Wanita → Tanggal → Resepsi → Galeri
+- Tambah edge: `page-filmroll-demo` → `slide-blank`
+- Total: 67 node · 84 edge
 
 ### v2.6 — 2026-08-09
 - Tambah node impl: `impl-lokasi-akad-svg` — SVG peta lokasi akad (`assets/svg_lokasi akad.svg`) ditambahkan ke kartu Akad Nikah di `slide-resepsi`, di bawah nama venue. Semua glyph teks (path vektor) di dalam SVG diseragamkan ke warna `#e5e1de` (sebelumnya dua warna berbeda: `#550000` dan `#492722`)
@@ -159,16 +241,18 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 | slide-scroll | Konten Slide | Konten isi halaman bergeser seperti slide presentasi saat user melakukan scroll. |
 | slide-galeri | Slide Galeri | Slide terakhir di `page-filmroll-demo` yang menampilkan film-roll-loop sebagai konten (bukan lagi background fixed). |
 | slide-hero | Slide Hero (Cover) | Slide pertama di `page-filmroll-demo` — layout split-screen: foto full-bleed di kanan, teks undangan di area hitam kiri. Judul pasangan pakai gambar SVG (`assets/tittle_adidivetri.svg`), bukan teks `<h1>`. Responsive: stack vertikal di mobile. |
-| slide-ayat | Slide Ayat Ar-Rum | Slide kedua di `page-filmroll-demo` — kartu berlatar polos gelap berisi judul surah "سُورَةُ الرُّومِ", label "Ar-Rum · Ayat 21", dan lafaz Basmalah dalam huruf Arab. |
+| slide-ayat | Slide Ayat Ar-Rum | Slide kedua di `page-filmroll-demo` (`id="slide-1"`) — kartu berlatar polos gelap berisi judul surah "سُورَةُ الرُّومِ", label "Ar-Rum · Ayat 21", dan lafaz Basmalah dalam huruf Arab. |
+| slide-blank | Slide Ucapan Terima Kasih | Slide ketiga di `page-filmroll-demo` (`id="slide-ayat"`), disisipkan setelah `slide-ayat` sebelum `slide-mempelai-pria`. Background warna solid `#e5e1de`; berisi judul gambar SVG (`assets/title_slide2.svg`, glyph teks warna `#550000`) dan dua paragraf teks undangan pembuka, dalam `.card` yang dibuat transparan (`.slide-blank .card` — tanpa background/blur/border, teks paragraf warna `#550000`). Ditambah satu dekorasi bunga mawar SVG di samping (besar) dengan animasi jatuh saat slide masuk viewport (`impl-rose-fall`). |
 | slide-mempelai-pria | Slide Mempelai Pria | Slide ketiga di `page-filmroll-demo` — foto full-bleed `photos/12.jpeg`, kartu nama mempelai pria (M. Rizky Adi Prasetyo) + nama orang tua. |
 | slide-mempelai-wanita | Slide Mempelai Wanita | Slide keempat di `page-filmroll-demo` — foto full-bleed `photos/11.jpeg`, kartu nama mempelai wanita (Divetri Ayu Rahmawati) + nama orang tua. |
 | slide-tanggal | Slide Simpan Tanggal | Slide berisi tombol pill "Simpan Tanggal" (`#saveDateBtn`) dengan sparkle berulang saat slide terlihat di viewport, plus countdown real-time (`#countdown`) menuju tanggal pernikahan. Klik tombol membuka Google Calendar dengan event terisi otomatis. |
 | slide-resepsi | Slide Resepsi | Slide kelima di `page-filmroll-demo` — foto full-bleed `photos/6.JPG` dengan overlay gelap, info waktu (11.00–14.00 WIB) dan lokasi (Grand Ballroom Hotel Mulia, Jakarta). Kartu Akad Nikah menampilkan SVG peta lokasi akad (`impl-lokasi-akad-svg`). |
+| slide-hadiah | Slide Tanda Kasih | Slide keenam di `page-filmroll-demo` (`id="slide-6"`), disisipkan setelah `slide-resepsi` sebelum `slide-galeri`. Background foto full-bleed `components/film-roll-loop/photos/11.jpg` dengan overlay gelap (`.hadiah-photo`, pola sama seperti `slide-resepsi`). Satu kartu (`.card`) berisi judul "Tanda Kasih" (Dream Avenue, tanpa `letter-spacing`), paragraf deskripsi (Source Serif Pro), alamat penerima, dan dua rekening (Bank Jago & BCA) — semuanya dengan tombol salin (`impl-copy-address`). |
 
 ### Halaman
 | ID | Label | Deskripsi |
 |----|-------|-----------|
-| page-filmroll-demo | Halaman Film Roll BG | Halaman utama undangan (entry point proyek), path `index.html`. Urutan slide: Hero → Ayat → Mempelai Pria → Mempelai Wanita → Tanggal → Resepsi → Galeri. Dibungkus gate akses berbasis parameter URL (`impl-guest-gate`). |
+| page-filmroll-demo | Halaman Film Roll BG | Halaman utama undangan (entry point proyek), path `index.html`. Urutan slide: Hero → Ayat → Blank → Mempelai Pria → Mempelai Wanita → Tanggal → Resepsi → Kirim Hadiah → Galeri. Dibungkus gate akses berbasis parameter URL (`impl-guest-gate`). |
 | page-filter-preview | Halaman Film Filter Preview | Halaman preview interaktif 6 preset filter kamera film untuk komponen film roll. Path: `pages/film-filter-preview.html` |
 
 ### Edge Case
@@ -222,7 +306,9 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 | impl-countdown | Countdown Pernikahan | Hitung mundur real-time (hari/jam/menit/detik) di `slide-tanggal` (`#cd-days`, `#cd-hours`, `#cd-mins`, `#cd-secs`) menuju `2026-08-29T08:00:00+07:00`, di-update tiap detik via `setInterval`. |
 | impl-guestname-fit | Auto-Shrink Nama Tamu | Fungsi JS `fitGuestName()` di `index.html`: setelah nama tamu disuntik (dari Firestore atau placeholder), font-size `.guest-name` diperkecil bertahap (step 1px, minimum 16px) selama `getBoundingClientRect().bottom` elemen melewati batas aman ~62% tinggi `.slide-hero` — bukan diukur dari tinggi kontainer flex `.hero-middle` (yang bisa menyusut/collapse dan memberi hasil ukur keliru), melainkan posisi viewport aktual wax seal. Dipanggil ulang saat `resize`. Tidak memotong teks — nama tetap wrap penuh, hanya diperkecil agar tidak menabrak stempel. |
 | impl-loading-screen | Loading Screen saat Fetch Firestore | Layar hitam (`#loadingScreen`) menutupi halaman secara default (`html.is-loading`) selama fetch async ke Firestore (`impl-guest-gate`) berlangsung, menampilkan logo Adi & Divetri di tengah beranimasi pulse (dimatikan saat `prefers-reduced-motion`), diikuti teks kredit statis "Built by Adipresto. Supervised by Dive. Powered by Dreamlabs" di bawah logo. Dua jalur reveal: (1) data tamu valid — loading screen slide ke atas keluar viewport, `.content-layer` slide masuk dari bawah; (2) tidak ada data — logo slide turun & lenyap, lalu `.gate-page` fade-in. Fallback instan tanpa animasi saat `prefers-reduced-motion` aktif. |
+| impl-rose-fall | Animasi Rose Jatuh | Satu gambar SVG dekoratif (`assets/rose.svg`) di `slide-blank`, di samping (`.rose-decor--side`, lebar `55vw` desktop, menempel tepi kanan-atas via `right: -12%`, ukuran besar memenuhi ~setengah layar). Di mobile (`max-width: 700px`), dipindah ke pojok kanan atas (`top: -6%; right: -8%`) dengan lebar diperbesar ke `85vw`; arah jatuhnya tetap dari atas (keyframe `roseFallSide`), konsisten dengan posisi mendarat di pojok atas. Rose tengah (`.rose-decor` polos, `@keyframes roseFall`) sudah dihapus — class dasar `.rose-decor` masih dipertahankan sebagai base style bersama (position, opacity, z-index) yang dipakai `.rose-decor--side`. Animasi jatuh dipicu `IntersectionObserver` saat slide masuk viewport (toggle class `.in-view` di `.slide-blank`, threshold 0.4). `height: auto` menjaga rasio SVG asli. `.slide-blank .card` diberi `z-index: 1` agar teks tetap di atas rose. Fallback instan tanpa animasi saat `prefers-reduced-motion` aktif. |
 | impl-lokasi-akad-svg | SVG Lokasi Akad | Gambar SVG peta lokasi akad (`assets/svg_lokasi akad.svg`, class `.lokasi-akad-svg`) ditampilkan di kartu Akad Nikah pada `slide-resepsi`, di bawah nama venue (Kantor KUA Welahan). Semua glyph teks di dalam SVG (path vektor, bukan elemen `<text>`) memakai warna solid `#e5e1de` — dua warna asli (`#550000` untuk judul, `#492722` untuk isi) diseragamkan jadi satu warna ini. |
+| impl-copy-address | Tombol Salin Alamat & Rekening | Handler generik `document.querySelectorAll(".copy-btn")` di `slide-hadiah` dipakai ulang untuk tiga tombol: alamat (`#copyAddressBtn`), rekening Bank Jago (`#copyJagoBtn`, `102099208975`, ikon `assets/jago-logo.svg`), dan rekening BCA (`#copyBcaBtn`, `5221698607`, ikon `assets/Logo_BCA_Biru.png`) — keduanya a.n. Muhammad Rizky Adi Prasetyo. Klik memanggil `navigator.clipboard.writeText()`; jika gagal (API tidak tersedia/diblokir), fallback ke `document.execCommand("copy")` lewat elemen `<textarea>` sementara yang disisipkan lalu dihapus dari DOM. Feedback visual sukses salin: class `.is-copied` (ikon berubah warna hijau) selama 1.8 detik lewat `setTimeout`. |
 
 ### Teknologi / API
 | ID | Label | Deskripsi |
@@ -307,6 +393,7 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 - `page-filmroll-demo` → `slide-galeri`
 - `slide-galeri` → `film-roll`
 - `page-filmroll-demo` → `slide-hero`
+- `page-filmroll-demo` → `slide-blank`
 - `page-filmroll-demo` → `slide-ayat`
 - `slide-hero` → `impl-hero-split`
 - `impl-hero-split` → `tech-maskimage`
@@ -324,6 +411,9 @@ Dokumen ini adalah representasi teks dari knowledge graph proyek. Berisi daftar 
 - `page-filmroll-demo` → `impl-loading-screen`
 - `impl-guest-gate` → `impl-loading-screen`
 - `slide-resepsi` → `impl-lokasi-akad-svg`
+- `slide-blank` → `impl-rose-fall`
+- `page-filmroll-demo` → `slide-hadiah`
+- `slide-hadiah` → `impl-copy-address`
 
 ### Film Roll Loop → Implementasi Baru
 - `film-roll` → `impl-film-filter`

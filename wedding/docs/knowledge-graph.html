@@ -125,11 +125,11 @@ canvas { display: block; }
 <div id="hdr">
   <h1>Undangan Online — Knowledge Graph</h1>
   <p>docs/requirements.md · docs/filmrollloop-requirements.md</p>
-  <span class="version">v2.6 · 2026-08-09</span>
+  <span class="version">v2.23 · 2026-08-10</span>
 </div>
 
 <div id="stats">
-  66 nodes · 83 edges
+  70 nodes · 87 edges
 </div>
 
 <canvas id="g"></canvas>
@@ -175,10 +175,12 @@ const nodes = [
   { id: 'slide-scroll',  label: 'Konten Slide',             type: 'component', r: 14, desc: 'Konten isi halaman bergeser seperti slide presentasi saat user melakukan scroll.' },
   { id: 'slide-galeri',  label: 'Slide Galeri',             type: 'component', r: 14, desc: 'Slide terakhir di page-filmroll-demo yang menampilkan film-roll-loop sebagai konten (bukan lagi background fixed).' },
   { id: 'slide-hero',    label: 'Slide Hero (Cover)',       type: 'component', r: 14, desc: 'Slide pertama di page-filmroll-demo — layout split-screen: foto full-bleed di kanan, teks undangan di area hitam kiri. Judul pasangan pakai gambar SVG (assets/tittle_adidivetri.svg), bukan teks h1. Responsive: stack vertikal di mobile.' },
-  { id: 'slide-ayat',    label: 'Slide Ayat Ar-Rum',        type: 'component', r: 14, desc: 'Slide kedua di page-filmroll-demo — kartu berlatar polos gelap berisi judul surah "Surah Ar-Rum", label "Ar-Rum · Ayat 21", dan lafaz Basmalah dalam huruf Arab.' },
+  { id: 'slide-ayat',    label: 'Slide Ayat Ar-Rum',        type: 'component', r: 14, desc: 'Slide kedua di page-filmroll-demo (id="slide-1") — kartu berlatar polos gelap berisi judul surah "Surah Ar-Rum", label "Ar-Rum · Ayat 21", dan lafaz Basmalah dalam huruf Arab.' },
+  { id: 'slide-blank',   label: 'Slide Ucapan Terima Kasih', type: 'component', r: 14, desc: 'Slide ketiga di page-filmroll-demo (id="slide-ayat"), disisipkan setelah slide-ayat sebelum slide-mempelai-pria. Background warna solid #e5e1de; berisi judul gambar SVG (assets/title_slide2.svg, glyph teks warna #550000) dan dua paragraf teks undangan pembuka, dalam .card transparan (.slide-blank .card — tanpa background/blur/border, teks paragraf warna #550000). Ditambah satu dekorasi bunga mawar SVG di samping (besar) dengan animasi jatuh saat slide masuk viewport.' },
   { id: 'slide-mempelai-pria',   label: 'Slide Mempelai Pria',   type: 'component', r: 14, desc: 'Slide ketiga di page-filmroll-demo — foto full-bleed photos/12.jpeg, kartu nama mempelai pria (M. Rizky Adi Prasetyo) + nama orang tua.' },
   { id: 'slide-mempelai-wanita', label: 'Slide Mempelai Wanita', type: 'component', r: 14, desc: 'Slide ketiga di page-filmroll-demo — foto full-bleed photos/11.jpeg, kartu nama mempelai wanita (Divetri Ayu Rahmawati) + nama orang tua.' },
   { id: 'slide-resepsi', label: 'Slide Resepsi', type: 'component', r: 14, desc: 'Slide kelima di page-filmroll-demo — foto full-bleed photos/6.JPG dengan overlay gelap, info waktu (11.00-14.00 WIB) dan lokasi (Grand Ballroom Hotel Mulia, Jakarta).' },
+  { id: 'slide-hadiah', label: 'Slide Tanda Kasih', type: 'component', r: 14, desc: 'Slide keenam di page-filmroll-demo, setelah slide-resepsi sebelum slide-galeri. Background foto 11.jpg full-bleed dengan overlay gelap. Satu kartu: judul Tanda Kasih (Dream Avenue), paragraf deskripsi (Source Serif Pro), alamat, dan dua rekening (Jago & BCA) — semua dengan tombol salin.' },
   { id: 'ec-autoplay',   label: 'Autoplay Restriction',    type: 'edgecase',  r: 11, desc: 'iOS/Android butuh atribut muted + playsinline agar autoplay berjalan tanpa interaksi user. Tanpa itu video stuck di frame pertama.' },
   { id: 'ec-ios-fixed',  label: 'iOS Fixed Bug',           type: 'edgecase',  r: 11, desc: 'Bug Safari lama: video fixed "lepas" saat scroll momentum (rubber-band). Fix: transform: translateZ(0) atau position: sticky pada parent.' },
   { id: 'ec-viewport',   label: 'Viewport Height',         type: 'edgecase',  r: 11, desc: 'Mobile browser me-resize viewport saat scroll (address bar collapse/expand). Gunakan 100dvh sebagai ganti 100vh.' },
@@ -235,6 +237,8 @@ const nodes = [
   { id: 'impl-guestname-fit', label: 'Auto-Shrink Nama Tamu', type: 'impl', r: 12, desc: 'Fungsi JS fitGuestName() memperkecil font-size nama tamu bertahap (berdasarkan getBoundingClientRect().bottom vs batas aman viewport) sampai tidak menabrak wax seal, tanpa memotong teks. Dipanggil ulang saat resize. Solusi: ec-guestname-overflow.' },
   { id: 'impl-loading-screen', label: 'Loading Screen Fetch Firestore', type: 'impl', r: 12, desc: 'Layar hitam (#loadingScreen) menutupi halaman default (html.is-loading) selama fetch async Firestore berlangsung, menampilkan logo Adi & Divetri di tengah beranimasi pulse (mati saat prefers-reduced-motion), diikuti teks kredit "Built by Adipresto. Supervised by Dive. Powered by Dreamlabs". Dua jalur reveal: data valid -> loading screen slide ke atas + content-layer slide masuk dari bawah; tidak ada data -> logo slide turun & lenyap lalu gate-page fade-in. Fallback instan saat prefers-reduced-motion.' },
   { id: 'impl-lokasi-akad-svg', label: 'SVG Lokasi Akad', type: 'impl', r: 12, desc: 'Gambar SVG peta lokasi akad (assets/svg_lokasi akad.svg, class .lokasi-akad-svg) ditampilkan di kartu Akad Nikah pada slide-resepsi, di bawah nama venue. Semua glyph teks (path vektor) di dalam SVG diseragamkan ke warna solid #e5e1de (sebelumnya #550000 dan #492722).' },
+  { id: 'impl-copy-address', label: 'Tombol Salin Alamat & Rekening', type: 'impl', r: 12, desc: 'Handler generik .copy-btn di slide-hadiah dipakai ulang untuk 3 tombol: alamat, rekening Jago (102099208975), dan BCA (5221698607), a.n. Muhammad Rizky Adi Prasetyo. Klik memanggil navigator.clipboard.writeText() dengan fallback document.execCommand("copy"). Feedback visual class .is-copied selama 1.8 detik.' },
+  { id: 'impl-rose-fall', label: 'Animasi Rose Jatuh', type: 'impl', r: 12, desc: 'Satu gambar SVG dekoratif (assets/rose.svg) di slide-blank, di samping (.rose-decor--side, lebar 55vw desktop, menempel tepi kanan-atas, ukuran besar memenuhi ~setengah layar). Di mobile (max-width:700px), pindah ke pojok kanan atas (top:-6%; right:-8%) lebar 85vw; arah jatuh tetap dari atas (keyframe roseFallSide). Rose tengah (.rose-decor polos) sudah dihapus — class dasar .rose-decor masih dipakai sebagai base style bersama. Animasi dipicu IntersectionObserver saat slide masuk viewport (toggle class .in-view, threshold 0.4). height:auto menjaga rasio SVG asli. Fallback instan tanpa animasi saat prefers-reduced-motion aktif.' },
 ];
 
 const edges = [
@@ -266,6 +270,7 @@ const edges = [
   ['page-filmroll-demo','slide-galeri'],
   ['slide-galeri','film-roll'],
   ['page-filmroll-demo','slide-hero'],
+  ['page-filmroll-demo','slide-blank'],
   ['page-filmroll-demo','slide-ayat'],
   ['slide-hero','impl-hero-split'],
   ['impl-hero-split','tech-maskimage'],
@@ -276,6 +281,8 @@ const edges = [
   ['slide-mempelai-pria','impl-mempelai-split'],
   ['slide-mempelai-wanita','impl-mempelai-split'],
   ['page-filmroll-demo','slide-resepsi'],
+  ['page-filmroll-demo','slide-hadiah'],
+  ['slide-hadiah','impl-copy-address'],
   ['page-filmroll-demo','impl-guest-gate'],
   ['slide-tanggal','impl-countdown'],
   ['film-roll','impl-filmroll-bg'],
@@ -299,6 +306,7 @@ const edges = [
   ['page-filmroll-demo','impl-loading-screen'],
   ['impl-guest-gate','impl-loading-screen'],
   ['slide-resepsi','impl-lokasi-akad-svg'],
+  ['slide-blank','impl-rose-fall'],
 ];
 
 const nodeMap = {};
